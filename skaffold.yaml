@@ -1,0 +1,19 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+build:
+  artifacts:
+    - image: auth
+      context: ./auth
+      sync:
+        manual:
+          - dest: .
+            src: 'src/**/*.ts'
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - ./infra/k8s/**/*
+deploy:
+  kubectl:
+    defaultNamespace: "ticketing"
