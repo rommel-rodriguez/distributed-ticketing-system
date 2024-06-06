@@ -16,10 +16,6 @@ app.use(signUpRouter);
 
 app.use(errorHandler);
 
-app.get('/api/users/currentuser', (req, res) => {
-  res.send('Das muessen die Daten des Benutzerz sein!!!!');
-});
-
 app.listen(3000, () => {
   console.log('=> Lauschen auf Port 3000!!!');
 });
