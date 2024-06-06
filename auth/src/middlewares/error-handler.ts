@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+// import { RequestValidationError } from '../errors/request-validation-error';
+// import { DatabaseConnectionError } from '../errors/database-connection-error';
+import { CustomError } from '../errors/custom-error';
 
 export const errorHandler = (
   err: Error,
@@ -6,6 +9,9 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log('Something went wrong', err);
-  res.status(400).send({ message: 'Middleware: Something went wrong' });
+  if (err instanceof CustomError) {
+    res.status(err.statusCode).send({ errors: err.serializeErrors() });
+  }
+
+  res.status(400).send({ errors: [{ message: 'Oops! Something went wrong' }] });
 };
