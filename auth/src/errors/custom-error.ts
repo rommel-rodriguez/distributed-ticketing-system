@@ -1,4 +1,4 @@
-interface ErrorPayload {
+export interface ErrorPayload {
   message: string;
   field?: string;
 }
