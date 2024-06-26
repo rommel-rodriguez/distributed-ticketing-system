@@ -10,6 +10,14 @@ build:
             src: 'src/**/*.ts'
       docker:
         dockerfile: Dockerfile
+    - image: client 
+      context: ./client
+      sync:
+        manual:
+          - dest: .
+            src: '**/*.js'
+      docker:
+        dockerfile: Dockerfile
 
 manifests:
   rawYaml:
