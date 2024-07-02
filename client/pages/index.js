@@ -1,4 +1,4 @@
-import axios from 'axios';
+import buildClient from '../api/build-client';
 
 const HomePage = ({ currentUser }) => {
   console.log('I am on the component!!');
@@ -13,25 +13,10 @@ const HomePage = ({ currentUser }) => {
   );
 };
 
-HomePage.getInitialProps = async ({ req }) => {
-  let currentuser_url = '/api/users/currentuser';
-  if (typeof window === 'undefined') {
-    currentuser_url =
-      'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/users/currentuser';
-  }
-
-  const response = await axios
-    .get(currentuser_url, { headers: { Host: 'ticketing.local' } })
-    .catch((err) => {
-      console.log(
-        `Auth Server (${currentuser_url}) Fails with:\n\t${err.message}`
-      );
-      console.log('Error Payload');
-      console.log(err.response?.data);
-    });
-  console.log(`Response we are getting from auth-svc using SSR:`);
-  console.log(response);
-  return { currentUser: response?.data?.currentUser };
+HomePage.getInitialProps = async (context) => {
+  const client = buildClient(context);
+  const { data } = await client.get('/api/users/currentuser');
+  return data;
 };
 
 export default HomePage;
