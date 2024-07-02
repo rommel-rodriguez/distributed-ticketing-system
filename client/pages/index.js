@@ -15,7 +15,11 @@ const HomePage = ({ currentUser }) => {
 
 HomePage.getInitialProps = async (context) => {
   const client = buildClient(context);
-  const { data } = await client.get('/api/users/currentuser');
+  const { data } = (await client.get('/api/users/currentuser').catch((err) => {
+    console.log(err.message);
+    console.log('HEY!!!!!!!!!!');
+    console.log(err.response.data);
+  })) || { data: { currentUser: null } };
   return data;
 };
 
