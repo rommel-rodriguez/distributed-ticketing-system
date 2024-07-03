@@ -8,7 +8,13 @@ const Header = ({ currentUser }) => {
   ]
     .filter((linkConfig) => linkConfig)
     .map(({ label, href }) => {
-      return <li key={href}>{label}</li>;
+      return (
+        <li key={href}>
+          <Link className='nav-link' href={href}>
+            {label}
+          </Link>
+        </li>
+      );
     });
   return (
     <nav className='navbar navbar-light bg-light'>
