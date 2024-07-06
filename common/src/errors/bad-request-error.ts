@@ -1,4 +1,3 @@
-import { signUpRouter } from '../routes/signup';
 import { CustomError, ErrorPayload } from './custom-error';
 
 export class BadRequestError extends CustomError {
