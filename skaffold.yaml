@@ -18,6 +18,14 @@ build:
             src: '**/*.js'
       docker:
         dockerfile: Dockerfile
+    - image: tickets 
+      context: ./tickets 
+      sync:
+        manual:
+          - dest: .
+            src: 'src/**/*.ts'
+      docker:
+        dockerfile: Dockerfile
 
 manifests:
   rawYaml:
