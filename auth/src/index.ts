@@ -18,7 +18,9 @@ const start = async () => {
 };
 
 app.listen(3000, () => {
-  console.log('=> Lauschen auf Port 3000!!!');
+  console.log('=> Hello Keychron world!!!');
+  console.log('Aufwiedersehen');
+  console.log('Au revoir!');
 });
 
 start();
