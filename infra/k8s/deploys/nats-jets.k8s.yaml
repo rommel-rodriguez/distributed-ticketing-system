@@ -26,3 +26,17 @@ spec:
 ---
 apiVersion: app/v1
 kind: Service
+metadata:
+  name: nats-jets-svc
+spec:
+  selector:
+    app: nats
+  ports:
+    - port: 4222 
+      targetPort: 4222
+      protocol: TCP
+      name: client
+    - port: 8222 
+      targetPort: 8222 
+      protocol:   TCP 
+      name: monitoring 
