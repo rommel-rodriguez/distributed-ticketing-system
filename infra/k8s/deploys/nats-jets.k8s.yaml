@@ -1,0 +1,24 @@
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: nats-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats-jets
+  template:
+    metadata:
+      labels:
+        app: nats-jets
+    spec:
+      containers:
+        - name: natsjs
+          image: nats:2.10.17-alpine3.20
+          args:
+            - "-js"
+            - "-p"
+            - "4222"
+            - "-m"
+            - "8222" 
+    
