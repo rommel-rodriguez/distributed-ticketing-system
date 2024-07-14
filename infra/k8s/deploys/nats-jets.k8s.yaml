@@ -21,4 +21,8 @@ spec:
             - "4222"
             - "-m"
             - "8222" 
+            - "-D"
     
+---
+apiVersion: app/v1
+kind: Service
