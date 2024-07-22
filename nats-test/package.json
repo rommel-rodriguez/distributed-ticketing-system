@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "publish": "ts-node-dev --rs --notify false src/publisher.ts",
+    "lpublish": "ts-node-dev --rs --notify false src/publisher_limits.ts",
     "listen": "ts-node-dev --rs --notify false src/listener.ts",
     "flisten": "ts-node-dev --rs --notify false src/listener_fetch.ts"
   },
