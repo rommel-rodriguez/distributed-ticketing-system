@@ -5,6 +5,7 @@ import {
   JSONCodec,
   JetStreamManager,
   AckPolicy,
+  DeliverPolicy,
 } from 'nats';
 
 // console.clear();
@@ -28,47 +29,27 @@ interface EventData {
 
   const sc = JSONCodec();
 
-  // NOTE: Consumer version: consume everything in the stream
-  // const c = await js.consumers.get('event-stream', {
-  //   name_prefix: 'listener01',
-  //   filterSubjects: 'ticket:created',
-  // });
-  // const c = await js.consumers.get('test-stream', {
-  //   name_prefix: 'listener01',
-  //   filterSubjects: 'ticket:created',
-  // });
-  // NOTE:  This version creates a 'durable' consumer
-  // generate random durable name for the consumer
-  // const durableWorkerName = `shadow-worker-${randomBytes(4).toString('hex')}`;
-  const durableWorkerName = 'shadow-worker';
-  // Creates the durable cosumer
+  const durableWorkerName = `shadow-worker-${randomBytes(4).toString('hex')}`;
+  // Creates the durable consumer
   await jsm.consumers.add(streamName, {
     durable_name: durableWorkerName,
     ack_policy: AckPolicy.Explicit,
     filter_subject: subjectName,
+    deliver_policy: DeliverPolicy.LastPerSubject,
   });
 
   const c = await js.consumers.get(streamName, durableWorkerName);
-  const messages = await c.consume();
-  // console.log('Messages');
-  // console.log(messages);
+  const messages = await c.fetch();
   for await (const m of messages) {
     // console.log(m.seq);
     let payload: EventData = sc.decode(m.data) as EventData;
     console.log(
       `Title: ${payload.title},Subject: ${m.subject}, Seq: ${m.seq}, Listener: ${m.info.consumer}`
     );
-    // console.log('TEST');
-    // console.log(m);
     console.log(payload);
     m.ack();
   }
   // NOTE: Subscription version: Consume just the most recent, or from a work queue, just he un-acknowledged
   console.log('subscription closed');
-  // const sub = nc.subscribe('tickets:created');
-  // for await (const m of sub) {
-  //   console.log(`[${sub.getProcessed()}]: ${sc.decode(m.data)}`);
-  // }
-  // console.log('subscription closed');
   await nc.close();
 })();

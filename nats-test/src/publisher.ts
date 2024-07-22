@@ -11,6 +11,8 @@ import {
 console.clear();
 
 const NATSJS_HOST = 'localhost:4222';
+const streamName = 'test-stream';
+const subjectName = 'ticket:created';
 
 (async () => {
   // Connect to the NATS server
@@ -28,15 +30,15 @@ const NATSJS_HOST = 'localhost:4222';
   // Stream definition
   const streamConfig = {
     // name: 'event-stream',
-    name: 'test-stream',
-    subjects: ['ticket:created'],
+    name: streamName,
+    subjects: [subjectName],
     storage: StorageType.File, // Use file storage
     retention: RetentionPolicy.Workqueue, // Use limits for retention policy
     // retention: RetentionPolicy.Limits, // Use limits for retention policy
     // max_age: 0, // Messages never expire
     // max_bytes: -1, // No limit on total stream size
     // max_msgs: -1, // No limit on the number of messages
-    discard: DiscardPolicy.Old, // Discard old messages when the limit is reached
+    // discard: DiscardPolicy.Old, // Discard old messages when the limit is reached
     // duplicates: 120000000000, // 2 minutes for duplicate tracking window
   };
   // Create a stream (if not already exists)
@@ -52,7 +54,7 @@ const NATSJS_HOST = 'localhost:4222';
   const data = { id: '123', title: 'concert', price: 20 };
 
   // Publish a message to the stream
-  const pa: PubAck = await js.publish('ticket:created', sc.encode(data)); // NOTE: Returns an Acknowledgement like object
+  const pa: PubAck = await js.publish(subjectName, sc.encode(data)); // NOTE: Returns an Acknowledgement like object
   if (pa) {
     console.log(`Published message with sequence: ${pa.seq}`);
     console.log('Whole of PA object:');
