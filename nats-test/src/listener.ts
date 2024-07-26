@@ -21,6 +21,8 @@ interface EventData {
 (async () => {
   // Connect to the NATS server
   const nc = await connect({ servers: `nats://${NATSJS_HOST}` });
+  process.on('SIGINT', async () => await nc.close());
+  process.on('SIGTERM', async () => await nc.close());
 
   const jsm: JetStreamManager = await nc.jetstreamManager();
   // Create a JetStream context
@@ -50,16 +52,12 @@ interface EventData {
 
   const c = await js.consumers.get(streamName, durableWorkerName);
   const messages = await c.consume();
-  // console.log('Messages');
-  // console.log(messages);
   for await (const m of messages) {
     // console.log(m.seq);
     let payload: EventData = sc.decode(m.data) as EventData;
     console.log(
       `Title: ${payload.title},Subject: ${m.subject}, Seq: ${m.seq}, Listener: ${m.info.consumer}`
     );
-    // console.log('TEST');
-    // console.log(m);
     console.log(payload);
     m.ack();
   }
@@ -71,4 +69,5 @@ interface EventData {
   // }
   // console.log('subscription closed');
   await nc.close();
+  process.exit();
 })();
