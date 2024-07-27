@@ -40,18 +40,19 @@ interface EventData {
     filter_subject: subjectName,
   });
 
-  const c = await js.consumers.get(streamName, durableWorkerName);
-  const messages = await c.consume();
-  for await (const m of messages) {
-    // console.log(m.seq);
-    let payload: EventData = sc.decode(m.data) as EventData;
-    console.log(
-      `Title: ${payload.title},Subject: ${m.subject}, Seq: ${m.seq}, Listener: ${m.info.consumer}`
-    );
-    console.log(payload);
-    m.ack();
-  }
-  // NOTE: Subscription version: Consume just the most recent, or from a work queue, just he un-acknowledged
+  await new TicketCreatedListener(nc).listen();
+  // const c = await js.consumers.get(streamName, durableWorkerName);
+  // const messages = await c.consume();
+  // for await (const m of messages) {
+  //   // console.log(m.seq);
+  //   let payload: EventData = sc.decode(m.data) as EventData;
+  //   console.log(
+  //     `Title: ${payload.title},Subject: ${m.subject}, Seq: ${m.seq}, Listener: ${m.info.consumer}`
+  //   );
+  //   console.log(payload);
+  //   m.ack();
+  // }
+  // // NOTE: Subscription version: Consume just the most recent, or from a work queue, just he un-acknowledged
   console.log('subscription closed');
   await nc.close();
   process.exit();
@@ -102,7 +103,6 @@ class TicketCreatedListener extends NatsListener {
     console.log(
       `Title: ${data.title},Subject: ${message.subject}, Seq: ${message.seq}, Listener: ${message.info.consumer}`
     );
-    console.log(data);
     message.ack();
   }
 }
