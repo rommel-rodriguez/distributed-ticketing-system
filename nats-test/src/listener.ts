@@ -1,10 +1,12 @@
-import { randomBytes } from 'crypto';
 import {
   connect,
-  StringCodec,
   JSONCodec,
   JetStreamManager,
+  JetStreamClient,
   AckPolicy,
+  NatsConnection,
+  Codec,
+  JsMsg,
 } from 'nats';
 
 // console.clear();
@@ -30,18 +32,6 @@ interface EventData {
 
   const sc = JSONCodec();
 
-  // NOTE: Consumer version: consume everything in the stream
-  // const c = await js.consumers.get('event-stream', {
-  //   name_prefix: 'listener01',
-  //   filterSubjects: 'ticket:created',
-  // });
-  // const c = await js.consumers.get('test-stream', {
-  //   name_prefix: 'listener01',
-  //   filterSubjects: 'ticket:created',
-  // });
-  // NOTE:  This version creates a 'durable' consumer
-  // generate random durable name for the consumer
-  // const durableWorkerName = `shadow-worker-${randomBytes(4).toString('hex')}`;
   const durableWorkerName = 'shadow-worker';
   // Creates the durable cosumer
   await jsm.consumers.add(streamName, {
@@ -63,11 +53,56 @@ interface EventData {
   }
   // NOTE: Subscription version: Consume just the most recent, or from a work queue, just he un-acknowledged
   console.log('subscription closed');
-  // const sub = nc.subscribe('tickets:created');
-  // for await (const m of sub) {
-  //   console.log(`[${sub.getProcessed()}]: ${sc.decode(m.data)}`);
-  // }
-  // console.log('subscription closed');
   await nc.close();
   process.exit();
 })();
+
+abstract class NatsListener {
+  abstract stream: string;
+  abstract subject: string;
+  abstract durableWorker: string;
+  abstract decoder: Codec<unknown>;
+  private connection: NatsConnection;
+  private client: JetStreamClient;
+  protected ackWait = 5 * 1000;
+
+  constructor(connection: NatsConnection) {
+    this.connection = connection;
+    this.client = connection.jetstream();
+  }
+  async listen() {
+    // NOTE: Putting the code before this.parseMessage inside the concerte method
+    // "listen", makes the strong assumption that this kind of setup, or initialization,
+    // process will be shared by all subclasses of NatsListener. TODO: Consider
+    // modifying this code to make it more flexible, meaning, make less assumptions.
+    const c = await this.client.consumers.get(this.stream, this.durableWorker);
+    const messages = await c.consume();
+    for await (const m of messages) {
+      const decodedData = this.parseMessage(m);
+      this.onMessage(decodedData, m);
+    }
+  }
+  parseMessage(message: JsMsg): EventData {
+    // NOTE: Do I need to try-catch this?
+    return this.decoder.decode(message.data) as EventData;
+  }
+
+  abstract onMessage(decodedData: EventData, message: JsMsg): any;
+}
+
+class TicketCreatedListener extends NatsListener {
+  stream: string = 'test-stream';
+  subject: string = 'ticket:created';
+  durableWorker: string = 'shadow-worker';
+  decoder: Codec<unknown> = JSONCodec();
+
+  onMessage(data: EventData, message: JsMsg) {
+    console.log('Event data!', data);
+
+    console.log(
+      `Title: ${data.title},Subject: ${message.subject}, Seq: ${message.seq}, Listener: ${message.info.consumer}`
+    );
+    console.log(data);
+    message.ack();
+  }
+}
