@@ -7,6 +7,7 @@ import {
   StorageType,
   DiscardPolicy,
 } from 'nats';
+import { TicketCreatedPublisher } from './events/ticket-created-publisher';
 
 console.clear();
 
@@ -45,20 +46,28 @@ const subjectName = 'ticket:created';
   // await jsm.streams.add({ name: 'mystream', subjects: ['foo'] });
   await jsm.streams.add(streamConfig);
 
-  // Create a JetStream context
-  const js = nc.jetstream();
+  // // Create a JetStream context
+  // const js = nc.jetstream();
 
-  // Create a StringCodec for encoding/decoding messages
-  const sc = JSONCodec();
+  // // Create a StringCodec for encoding/decoding messages
+  // const sc = JSONCodec();
 
   const data = { id: '123', title: 'concert', price: 20 };
 
-  // Publish a message to the stream
-  const pa: PubAck = await js.publish(subjectName, sc.encode(data)); // NOTE: Returns an Acknowledgement like object
-  if (pa) {
-    console.log(`Published message with sequence: ${pa.seq}`);
-    console.log('Whole of PA object:');
-    console.log(pa);
+  // // Publish a message to the stream
+  // const pa: PubAck = await js.publish(subjectName, sc.encode(data)); // NOTE: Returns an Acknowledgement like object
+  // if (pa) {
+  //   console.log(`Published message with sequence: ${pa.seq}`);
+  //   console.log('Whole of PA object:');
+  //   console.log(pa);
+  // }
+
+  // NOTE: Refactoring to use new publisher class
+  const publisher = new TicketCreatedPublisher(nc);
+  try {
+    await publisher.publish(data);
+  } catch (err) {
+    console.error(err);
   }
 
   await nc.close();

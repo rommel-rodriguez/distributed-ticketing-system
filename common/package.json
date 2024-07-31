@@ -1,6 +1,6 @@
 {
   "name": "@rrpereztickets/common",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -26,6 +26,7 @@
     "cookie-session": "^2.1.0",
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "nats": "^2.28.2"
   }
 }
