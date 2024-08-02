@@ -13,5 +13,6 @@ export * from './middlewares/validate-request';
 export * from './events/nats-listener';
 export * from './events/base-nats-publisher';
 export * from './events/subjects';
+export * from './events/streams';
 export * from './events/ticket-created-event';
 export * from './events/ticket-updated-event';

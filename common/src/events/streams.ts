@@ -4,3 +4,4 @@
 export enum Streams {
   EventStream = 'event-stream',
 }
+// NOTE: Token comment

@@ -1,5 +1,6 @@
 import { JetStreamClient, NatsConnection, Codec, JsMsg } from 'nats';
 import { Subjects } from './subjects';
+import { Streams } from './streams';
 
 export interface EventData {
   id: string;
@@ -8,12 +9,13 @@ export interface EventData {
 }
 
 export interface Event {
+  stream: Streams;
   subject: Subjects;
   data: any;
 }
 
 export abstract class NatsListener<T extends Event> {
-  abstract stream: string;
+  abstract stream: T['stream'];
   abstract subject: T['subject'];
   abstract durableWorker: string;
   abstract onMessage(decodedData: T['data'], message: JsMsg): any;

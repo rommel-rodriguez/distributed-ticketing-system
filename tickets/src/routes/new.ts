@@ -8,6 +8,7 @@ import {
 
 import { Ticket } from '../models/ticket';
 import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -28,8 +29,10 @@ router.post(
       price,
       userId: req.currentUser!.id,
     });
+    // NOTE: After .save is ran, the ticket object will have its data updated with
+    // values to match the values in the database.
     await ticket.save();
-    await new TicketCreatedPublisher(connection).publish({
+    await new TicketCreatedPublisher(natsWrapper.connection).publish({
       id: ticket.id,
       title: ticket.title,
       price: ticket.price,

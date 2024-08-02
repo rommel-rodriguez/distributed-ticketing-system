@@ -1,13 +1,15 @@
 import { JetStreamClient, NatsConnection, JSONCodec, PubAck } from 'nats';
 import { Subjects } from './subjects';
+import { Streams } from './streams';
 
 interface Event {
+  stream: Streams;
   subject: Subjects;
   data: any;
 }
 
 export abstract class BaseNatsPublisher<T extends Event> {
-  abstract stream: string;
+  abstract stream: T['stream'];
   abstract subject: T['subject'];
   private client: JetStreamClient;
 
