@@ -4,7 +4,7 @@ import { TicketCreatedEvent } from './ticket-create-event';
 import { Subjects } from './subjects';
 
 export class TicketCreatedListener extends NatsListener<TicketCreatedEvent> {
-  stream: string = 'test-stream';
+  stream: string = 'event-stream';
   // NOTE: This is some really weird TS quirk.
   readonly subject: Subjects.TicketCreated = Subjects.TicketCreated;
   durableWorker: string = 'shadow-worker';

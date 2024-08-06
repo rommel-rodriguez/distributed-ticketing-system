@@ -1,5 +1,5 @@
 import { NatsConnection, connect } from 'nats';
-import { randomBytes } from 'crypto';
+import { setupEventStreamWrapper } from '@rrpereztickets/common';
 
 const NATSJS_HOST = 'localhost:4222';
 
@@ -20,12 +20,20 @@ class NatsWrapper {
         servers: url,
         // name: `events-client-${randomBytes(3).toString('hex')}`,
         name: clientId,
+        timeout: 500,
       });
       console.log('Successfully connected to NATS server');
     } catch (error) {
       console.log('Error while connecting to NATS server');
       console.log(error);
     }
+  }
+
+  async setupStream() {
+    if (!this._connection) {
+      throw new Error('Cannot setup stream before connecting to NATS');
+    }
+    await setupEventStreamWrapper(this._connection);
   }
 }
 

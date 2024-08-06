@@ -4,7 +4,7 @@ import { TicketCreatedListener } from './events/ticket-created-listener';
 
 // console.clear();
 const NATSJS_HOST = 'localhost:4222';
-const streamName = 'test-stream';
+const streamName = 'event-stream';
 const subjectName = 'ticket:created';
 
 (async () => {
