@@ -20,8 +20,8 @@ export abstract class BaseNatsPublisher<T extends Event> {
   async publish(data: T['data']) {
     const encodedMessage = this.encodeMessage(data);
     const pa: PubAck = await this.client.publish(this.subject, encodedMessage);
-    console.log('Event Published');
-    console.log('Publish Acknowledgement: ', pa);
+    console.log('Event Published to subject: ', this.subject);
+    // console.log('Publish Acknowledgement: ', pa);
   }
 
   encodeMessage(data: T['data']) {
