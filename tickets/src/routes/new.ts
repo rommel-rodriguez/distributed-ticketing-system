@@ -32,6 +32,8 @@ router.post(
     // NOTE: After .save is ran, the ticket object will have its data updated with
     // values to match the values in the database.
     await ticket.save();
+    // NOTE: lacking logging for the case in which saving to the database succeeds, but
+    // publishing fails. What then?
     await new TicketCreatedPublisher(natsWrapper.connection).publish({
       id: ticket.id,
       title: ticket.title,
