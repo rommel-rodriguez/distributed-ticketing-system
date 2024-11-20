@@ -6,6 +6,13 @@ const NATSJS_HOST = 'localhost:4222';
 class NatsWrapper {
   private _connection?: NatsConnection;
 
+  /**
+   * NOTE: Let it be noted, that wih my current implementation, I am no passing a
+   * nats client object but a nats connection type object. So, for each call tot he
+   * publish method in a publisher, a new client object will be created. This might
+   * not be a problem for a test project, but further compare the overhead of doing this
+   * versus instantiating a client and passing that around instead of a raw connection.
+   */
   get connection() {
     if (!this._connection) {
       throw new Error('Cannot access NATS client before connecting');
