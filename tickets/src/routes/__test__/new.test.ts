@@ -75,7 +75,6 @@ it('publishes an event', async () => {
     .set('Cookie', global.signin())
     .send({ title, price: 20 })
     .expect(201);
-  expect(natsWrapper.connection.jetstream().publish).toHaveBeenCalled();
-  console.log(natsWrapper);
-  console.log(natsWrapper.connection.jetstream().publish.mock.calls);
+  console.log(natsWrapper.client.publish);
+  expect(natsWrapper.client.publish).toHaveBeenCalled();
 });

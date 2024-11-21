@@ -1,10 +1,11 @@
-import { NatsConnection, connect } from 'nats';
+import { NatsConnection, connect, JetStreamClient } from 'nats';
 import { setupEventStreamWrapper } from '@rrpereztickets/common';
 
 const NATSJS_HOST = 'localhost:4222';
 
 class NatsWrapper {
   private _connection?: NatsConnection;
+  private _client?: JetStreamClient;
 
   /**
    * NOTE: Let it be noted, that wih my current implementation, I am no passing a
@@ -15,9 +16,18 @@ class NatsWrapper {
    */
   get connection() {
     if (!this._connection) {
-      throw new Error('Cannot access NATS client before connecting');
+      throw new Error(
+        'Cannot access NATS connection calling the connect method'
+      );
     }
     return this._connection;
+  }
+
+  get client() {
+    if (!this._client) {
+      throw new Error('Cannot access NATS client before connecting');
+    }
+    return this._client;
   }
 
   async connect(clientId: string, url: string) {
@@ -30,6 +40,8 @@ class NatsWrapper {
         timeout: 500,
       });
       console.log('Successfully connected to NATS server');
+      this._client = this._connection.jetstream();
+      console.log('Sucessfully created NATS client');
     } catch (error) {
       console.log('Error while connecting to NATS server');
       console.log(error);

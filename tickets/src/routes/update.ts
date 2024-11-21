@@ -36,7 +36,7 @@ router.put(
     await ticket.save();
     // NOTE: lacking logging for the case in which saving to the database succeeds, but
     // publishing fails. What then?
-    await new TicketUpdatedPublisher(natsWrapper.connection).publish({
+    await new TicketUpdatedPublisher(natsWrapper.client).publish({
       id: ticket.id,
       title: ticket.title,
       price: ticket.price,
