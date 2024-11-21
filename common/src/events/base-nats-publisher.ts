@@ -13,8 +13,8 @@ export abstract class BaseNatsPublisher<T extends Event> {
   abstract subject: T['subject'];
   private client: JetStreamClient;
 
-  constructor(connection: NatsConnection) {
-    this.client = connection.jetstream();
+  constructor(client: JetStreamClient) {
+    this.client = client;
   }
 
   async publish(data: T['data']) {
