@@ -41,7 +41,7 @@ class NatsWrapper {
       });
       console.log('Successfully connected to NATS server');
       this._client = this._connection.jetstream();
-      console.log('Sucessfully created NATS client');
+      console.log('Successfully created NATS client');
     } catch (error) {
       console.log('Error while connecting to NATS server');
       console.log(error);

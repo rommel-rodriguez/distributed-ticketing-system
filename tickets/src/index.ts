@@ -34,8 +34,17 @@ const start = async () => {
   if (!process.env.MONGO_URI) {
     throw new Error('Mongo URI must be defined');
   }
+  if (!process.env.NATS_CLIENT_ID) {
+    throw new Error('NATS_CLIENT_ID be defined');
+  }
+  if (!process.env.NATS_URL) {
+    throw new Error('NATS_URL must be defined');
+  }
+  if (!process.env.NATS_CLUSTER_ID) {
+    throw new Error('NATS_CLUSTER_ID must be defined');
+  }
   try {
-    await natsWrapper.connect('event-client-', natsUrl);
+    await natsWrapper.connect(process.env.NATS_CLIENT_ID, process.env.NATS_URL);
     // NOTE: I have a problem. Here is the place in which I should place
     // the code to handle kb interrupts and to exit the app if we fail to
     // connect to nats, which is done through a callback, well, this is

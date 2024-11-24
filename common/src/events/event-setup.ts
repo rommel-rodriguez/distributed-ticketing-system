@@ -49,6 +49,10 @@ const subjects = [Subjects.TicketCreated, Subjects.TicketUpdated];
  */
 const setupEventStream = async (nc: NatsConnection, subjects: string[]) => {
   // TODO: Should I setup the consumers here also?
+  // TODO: Decide whether or not this should be hardcoded or not.
+  // It will most likely have to be hardcoded if I can not get the behavior one does
+  // when creating 'consumer groups' so that the same instances of one services only
+  // get the same event in one instance, but other services get the same event also.
   const streamName = 'event-stream';
   const jsm: JetStreamManager = await nc.jetstreamManager();
 

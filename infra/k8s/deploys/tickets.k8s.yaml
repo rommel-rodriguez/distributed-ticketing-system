@@ -18,10 +18,14 @@ spec:
           image: tickets 
           imagePullPolicy: Never
           env:
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: NATS_URL
               value: 'nats://nats-jets-svc:4222' 
             - name: NATS_CLUSTER_ID
-              value: ticketing
+              value: ticketing 
             - name: MONGO_URI
               value: mongodb://tickets-mongo-svc:27017/tickets
             - name: JWT_KEY
