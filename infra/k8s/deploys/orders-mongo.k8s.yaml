@@ -1,0 +1,31 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: orders-mongo
+spec:
+  selector:
+    matchLabels:
+      app: orders-mongo
+  template:
+    metadata:
+      labels:
+        app: orders-mongo
+    spec:
+      containers:
+        - name: orders-mongo
+          image: mongo:7.0.11-jammy
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-mongo-svc
+spec:
+  selector:
+    app: orders-mongo
+  ports:
+    - port: 27017 
+      targetPort: 27017
+      protocol: TCP
+      name: db

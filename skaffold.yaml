@@ -26,6 +26,14 @@ build:
             src: 'src/**/*.ts'
       docker:
         dockerfile: Dockerfile
+    - image: orders 
+      context: ./orders
+      sync:
+        manual:
+          - dest: .
+            src: 'src/**/*.ts'
+      docker:
+        dockerfile: Dockerfile
 
 manifests:
   rawYaml:
