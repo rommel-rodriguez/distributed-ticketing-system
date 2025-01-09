@@ -17,3 +17,4 @@ export * from './events/streams';
 export * from './events/ticket-created-event';
 export * from './events/ticket-updated-event';
 export * from './events/event-setup';
+export * from './events/types/order-status';
