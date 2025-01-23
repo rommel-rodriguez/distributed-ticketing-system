@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 import { OrderStatus } from '@rrpereztickets/common';
+import { TicketDoc } from './ticket';
+
+export { OrderStatus };
 
 interface OrderAttrs {
   userId: string;
@@ -39,7 +42,8 @@ const orderSchema = new mongoose.Schema(
     },
 
     ticket: {
-      types: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
+      // types: mongoose.Schema.Types.UUID,
       ref: 'Ticket',
     },
   },
@@ -59,3 +63,5 @@ orderSchema.statics.build = (attrs: OrderAttrs) => {
 };
 
 const Order = mongoose.model<OrderDoc, OrderModel>('Order', orderSchema);
+
+export { Order };
