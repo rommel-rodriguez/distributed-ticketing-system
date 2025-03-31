@@ -1,4 +1,4 @@
-import { JetStreamClient, NatsConnection, Codec, JsMsg } from 'nats';
+import { JetStreamClient, NatsConnection, Codec, JsMsg, JSONCodec } from 'nats';
 import { Subjects } from './subjects';
 import { Streams } from './streams';
 
@@ -19,7 +19,8 @@ export abstract class NatsListener<T extends Event> {
   abstract subject: T['subject'];
   abstract durableWorker: string;
   abstract onMessage(decodedData: T['data'], message: JsMsg): any;
-  abstract decoder: Codec<unknown>;
+  // abstract decoder: Codec<unknown>;
+  private decoder: Codec<unknown> = JSONCodec();
   private connection: NatsConnection;
   private client: JetStreamClient;
   protected ackWait = 5 * 1000;
@@ -36,6 +37,7 @@ export abstract class NatsListener<T extends Event> {
     const c = await this.client.consumers.get(this.stream, this.durableWorker);
     const messages = await c.consume();
     for await (const m of messages) {
+      console.log(`Message received: ${this.subject} / ${this.durableWorker}`);
       const decodedData = this.parseMessage(m);
       this.onMessage(decodedData, m);
     }

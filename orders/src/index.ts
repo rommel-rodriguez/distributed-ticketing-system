@@ -4,6 +4,14 @@ import { NatsConnection } from 'nats';
 
 import { app } from './app';
 
+import { TicketCreatedListener } from './events/listeners/ticket-created-listener';
+import { TicketUpdatedListener } from './events/listeners/ticket-updated-listener';
+import { createConsumer, Subjects } from '@rrpereztickets/common';
+import {
+  ticketCreatedWorker,
+  ticketUpdatedWorker,
+} from './events/listeners/queue-group-name';
+
 const NATSJS_HOST = 'nats-jets-svc:4222';
 const natsUrl = `nats://${NATSJS_HOST}`;
 
@@ -67,6 +75,20 @@ const start = async () => {
     // Also, I would need this function to run to forever at least logging whatever
     // made the nats connection to be lost.
     await natsWrapper.setupStream();
+    await createConsumer(
+      natsWrapper.connection,
+      ticketCreatedWorker,
+      Subjects.TicketCreated
+    );
+    await createConsumer(
+      natsWrapper.connection,
+      ticketUpdatedWorker,
+      Subjects.TicketUpdated
+    );
+
+    new TicketCreatedListener(natsWrapper.connection).listen();
+    new TicketUpdatedListener(natsWrapper.connection).listen();
+
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB!!!');
   } catch (err) {

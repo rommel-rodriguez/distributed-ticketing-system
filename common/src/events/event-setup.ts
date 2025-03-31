@@ -4,9 +4,11 @@ import {
   StorageType,
   NatsConnection,
   NatsError,
+  AckPolicy,
 } from 'nats';
 
 import { Subjects } from './subjects';
+import { Streams } from './streams';
 
 /**
  * Finds out if the stream already exists
@@ -40,7 +42,12 @@ const streamAlreadyExists = async (
 // TODO: Analyze whether or not it is a good design decision to leave the specification
 // , or initialization, of subjects here. Maybe..
 //  const subjects = ['ticket:created', 'ticket:updated'];
-const subjects = [Subjects.TicketCreated, Subjects.TicketUpdated];
+const subjects = [
+  Subjects.TicketCreated,
+  Subjects.TicketUpdated,
+  Subjects.OrderCancelled,
+  Subjects.OrderCreated,
+];
 
 /**
  * Creates a persistent NATS JS stream and associates an array of subjects with it.
@@ -53,7 +60,8 @@ const setupEventStream = async (nc: NatsConnection, subjects: string[]) => {
   // It will most likely have to be hardcoded if I can not get the behavior one does
   // when creating 'consumer groups' so that the same instances of one services only
   // get the same event in one instance, but other services get the same event also.
-  const streamName = 'event-stream';
+  // const streamName = 'event-stream';
+  const streamName = Streams.EventStream;
   const jsm: JetStreamManager = await nc.jetstreamManager();
 
   const streamExists = await streamAlreadyExists(streamName, jsm);
@@ -84,4 +92,103 @@ const setupEventStreamWrapper = async (nc: NatsConnection) => {
   await setupEventStream(nc, subjects);
 };
 
-export { setupEventStreamWrapper };
+const getConsumerInfo = async (nc: NatsConnection, workerName: string) => {
+  const jsm: JetStreamManager = await nc.jetstreamManager();
+  let consumerInfo;
+  try {
+    consumerInfo = await jsm.consumers.info(Streams.EventStream, workerName);
+  } catch (err) {
+    if (err instanceof NatsError) {
+      console.debug(`Durable Consumer ${workerName} does not exists`);
+      return null;
+    }
+    throw err; // Rethrow the error if it is not a nats error
+  }
+  return consumerInfo;
+};
+
+const createConsumer = async (
+  nc: NatsConnection,
+  workerName: string,
+  subject: string
+) => {
+  const jsm: JetStreamManager = await nc.jetstreamManager();
+  // const durableWorkerName = 'shadow-worker';
+  // Test if consumer already exists
+  // Current assumption is that .info returns a falsy value if the consumer does not
+  // exist
+  const consumerInfo = await getConsumerInfo(nc, workerName);
+  if (consumerInfo) {
+    console.debug(
+      `The consumer ${workerName} already exists in stream ${Streams.EventStream}`
+    );
+    console.debug(consumerInfo);
+    return;
+  }
+  // Creates the durable consumer, if it does not already  exists
+  await jsm.consumers.add(Streams.EventStream, {
+    durable_name: workerName,
+    ack_policy: AckPolicy.Explicit,
+    // TODO: Add subjects parameter to this function, then check the docs on nats site.
+    filter_subject: subject,
+  });
+
+  await nc.close();
+};
+
+/**
+ *
+ * @param nc
+ * @param subject
+ */
+const addSubjectToNatsStream = async (
+  nc: NatsConnection,
+  subject: string,
+  stream: Streams
+) => {
+  // TODO:
+  // - Check NATS docs describe the process of updating a stream
+  // - If not specific, first get the original subjects already in the Stream
+  // - Then, test if the subject to be added is already listed
+  // - If already listed, do nothing.
+  // - If not listed, append it do the array and update the stream.
+  const jsm: JetStreamManager = await nc.jetstreamManager();
+  const streamExists = await streamAlreadyExists(stream, jsm);
+
+  if (!streamExists) {
+    console.error(`The stream ${stream} does not exist`);
+    return;
+  }
+  console.log(`The stream ${stream} already exists`);
+  console.log(`Trying to add subject ${subject}`);
+  // let streamInfo;
+  // try {
+  //   streamInfo = await jsm.streams.info(Streams.EventStream);
+  // } catch (err) {
+  //   if (err instanceof NatsError) {
+  //     console.debug(
+  //       `Failed to retrieve the information of ${Streams.EventStream}`
+  //     );
+  //   }
+  //   throw err;
+  // }
+  let updatedStreamInfo;
+  try {
+    updatedStreamInfo = await jsm.streams.update(Streams.EventStream, {
+      subjects: [], // TODO:
+    });
+    console.log(
+      `Stream updated, added subject${subject}:\n${updatedStreamInfo}`
+    );
+  } catch (err) {
+    if (err instanceof NatsError) {
+      console.error(
+        `Failed to update the configuration of ${Streams.EventStream}`
+      );
+    }
+
+    throw err;
+  }
+};
+
+export { setupEventStreamWrapper, createConsumer, addSubjectToNatsStream };
