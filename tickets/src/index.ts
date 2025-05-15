@@ -1,11 +1,7 @@
 import mongoose from 'mongoose';
 import { natsWrapper } from './nats-wrapper';
-import { NatsConnection } from 'nats';
 
 import { app } from './app';
-
-const NATSJS_HOST = 'nats-jets-svc:4222';
-const natsUrl = `nats://${NATSJS_HOST}`;
 
 type TypeOfNatsWrapper = typeof natsWrapper;
 
