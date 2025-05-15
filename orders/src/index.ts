@@ -18,20 +18,20 @@ const natsUrl = `nats://${NATSJS_HOST}`;
 type TypeOfNatsWrapper = typeof natsWrapper;
 
 const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
-  let natsConnectionClosed;
+  console.log('Inside NATS Connection Closed Handler');
   try {
-    natsConnectionClosed = natsWrapper.connection.closed();
-  } catch (error) {
-    console.log('Inside NATS Connection Closed Handler');
-    console.log('Something went wrong while trying to access the connection');
-    console.log(error);
-    process.exit();
-  }
-  while (true) {
-    const err = await natsConnectionClosed;
+    const err = await natsWrapper.connection.closed();
     console.log('Connection to NATS Server closed!!!');
-    console.log(err);
-    process.exit();
+    if (err) {
+      console.log('The reason for the connection closure is:', err);
+    }
+    // Error 11 connection to NATS closed
+    process.exit(11);
+  } catch (error) {
+    console.error('Error while handling NATS connection closure:', error);
+
+    console.log(error);
+    process.exit(11);
   }
 };
 
@@ -86,10 +86,6 @@ const start = async () => {
       Subjects.TicketUpdated
     );
 
-    let isConnectionClosed = await natsWrapper.connection.closed();
-    console.log(`Is connection closed? ${isConnectionClosed}`);
-    console.log(isConnectionClosed);
-    //
     new TicketCreatedListener(natsWrapper.connection).listen();
     new TicketUpdatedListener(natsWrapper.connection).listen();
 
@@ -97,6 +93,7 @@ const start = async () => {
     console.log('Connected to MongoDB!!!');
   } catch (err) {
     console.log(err);
+    process.exit(1);
   }
 };
 
