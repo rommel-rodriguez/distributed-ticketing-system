@@ -5,21 +5,38 @@ import { app } from './app';
 
 type TypeOfNatsWrapper = typeof natsWrapper;
 
+// const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
+//   let natsConnectionClosed;
+//   try {
+//     natsConnectionClosed = await natsWrapper.connection.closed();
+//   } catch (error) {
+//     console.log('Inside NATS Connection Closed Handler');
+//     console.log('Something went wrong while trying to access the connection');
+//     console.log(error);
+//     process.exit();
+//   }
+//   while (true) {
+//     const err = await natsConnectionClosed;
+//     console.log('Connection to NATS Server closed!!!');
+//     console.log(err);
+//     process.exit();
+//   }
+// };
 const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
-  let natsConnectionClosed;
+  console.log('Inside NATS Connection Closed Handler');
   try {
-    natsConnectionClosed = await natsWrapper.connection.closed();
-  } catch (error) {
-    console.log('Inside NATS Connection Closed Handler');
-    console.log('Something went wrong while trying to access the connection');
-    console.log(error);
-    process.exit();
-  }
-  while (true) {
-    const err = await natsConnectionClosed;
+    const err = await natsWrapper.connection.closed();
     console.log('Connection to NATS Server closed!!!');
-    console.log(err);
-    process.exit();
+    if (err) {
+      console.log('The reason for the connection closure is:', err);
+    }
+    // Error 11 connection to NATS closed
+    process.exit(11);
+  } catch (error) {
+    console.error('Error while handling NATS connection closure:', error);
+
+    console.log(error);
+    process.exit(11);
   }
 };
 
