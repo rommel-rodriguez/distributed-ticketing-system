@@ -99,7 +99,7 @@ const getConsumerInfo = async (nc: NatsConnection, workerName: string) => {
     consumerInfo = await jsm.consumers.info(Streams.EventStream, workerName);
   } catch (err) {
     if (err instanceof NatsError) {
-      console.debug(`Durable Consumer ${workerName} does not exists`);
+      console.log(`Durable Consumer ${workerName} does not exists`);
       return null;
     }
     throw err; // Rethrow the error if it is not a nats error
@@ -112,28 +112,40 @@ const createConsumer = async (
   workerName: string,
   subject: string
 ) => {
+  console.log(
+    `Creating consumer/worker: ${workerName} for subject: ${subject}`
+  );
   const jsm: JetStreamManager = await nc.jetstreamManager();
   // const durableWorkerName = 'shadow-worker';
   // Test if consumer already exists
   // Current assumption is that .info returns a falsy value if the consumer does not
   // exist
-  const consumerInfo = await getConsumerInfo(nc, workerName);
+  let consumerInfo = await getConsumerInfo(nc, workerName);
   if (consumerInfo) {
-    console.debug(
+    console.log(
       `The consumer ${workerName} already exists in stream ${Streams.EventStream}`
     );
-    console.debug(consumerInfo);
+    console.log(consumerInfo);
     return;
   }
   // Creates the durable consumer, if it does not already  exists
-  await jsm.consumers.add(Streams.EventStream, {
+  consumerInfo = await jsm.consumers.add(Streams.EventStream, {
     durable_name: workerName,
     ack_policy: AckPolicy.Explicit,
     // TODO: Add subjects parameter to this function, then check the docs on nats site.
     filter_subject: subject,
   });
-
-  await nc.close();
+  if (!consumerInfo) {
+    console.log(
+      `Failed to create consumer/worker: ${workerName} for subject: ${subject}`
+    );
+    // await nc.close();
+    return;
+  }
+  console.log(
+    `Succeeded creating consumer/worker: ${workerName} for subject: ${subject}`
+  );
+  // await nc.close();
 };
 
 /**
