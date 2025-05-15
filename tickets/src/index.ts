@@ -12,7 +12,7 @@ type TypeOfNatsWrapper = typeof natsWrapper;
 const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
   let natsConnectionClosed;
   try {
-    natsConnectionClosed = natsWrapper.connection.closed();
+    natsConnectionClosed = await natsWrapper.connection.closed();
   } catch (error) {
     console.log('Inside NATS Connection Closed Handler');
     console.log('Something went wrong while trying to access the connection');
