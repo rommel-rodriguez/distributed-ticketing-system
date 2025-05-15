@@ -86,6 +86,10 @@ const start = async () => {
       Subjects.TicketUpdated
     );
 
+    let isConnectionClosed = await natsWrapper.connection.closed();
+    console.log(`Is connection closed? ${isConnectionClosed}`);
+    console.log(isConnectionClosed);
+    //
     new TicketCreatedListener(natsWrapper.connection).listen();
     new TicketUpdatedListener(natsWrapper.connection).listen();
 
