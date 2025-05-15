@@ -34,6 +34,8 @@ router.post(
     await ticket.save();
     // NOTE: lacking logging for the case in which saving to the database succeeds, but
     // publishing fails. What then?
+    // TODO: Missing code to handle a failure while publishing. By default the publish
+    // method will raise an error here if it can not save the event in NATS.
     await new TicketCreatedPublisher(natsWrapper.client).publish({
       id: ticket.id,
       title: ticket.title,
