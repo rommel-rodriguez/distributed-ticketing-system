@@ -38,6 +38,7 @@ router.post(
     // method will raise an error here if it can not save the event in NATS.
     await new TicketCreatedPublisher(natsWrapper.client).publish({
       id: ticket.id,
+      version: ticket.version,
       title: ticket.title,
       price: ticket.price,
       userId: ticket.userId,
