@@ -15,7 +15,10 @@ export class TicketUpdatedListener extends NatsListener<TicketUpdatedEvent> {
   durableWorker: string = ticketUpdatedWorker;
 
   async onMessage(decodedData: TicketUpdatedEvent['data'], message: JsMsg) {
-    const ticket = await Ticket.findById(decodedData.id);
+    const ticket = await Ticket.findOne({
+      _id: decodedData.id,
+      version: decodedData.version - 1,
+    });
 
     if (!ticket) {
       throw new Error('Ticket to be updated not found');
