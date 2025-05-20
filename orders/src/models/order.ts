@@ -16,6 +16,9 @@ interface OrderDoc extends mongoose.Document {
   status: OrderStatus;
   expiresAt: Date;
   ticket: TicketDoc;
+  // S: Implementing the Optimistic Concurrency solution mongoose-update-if-current offers
+  version: number;
+  // E: Implementing the Optimistic Concurrency solution mongoose-update-if-current offers
 }
 
 interface OrderModel extends mongoose.Model<OrderDoc> {

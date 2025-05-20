@@ -28,6 +28,7 @@ router.delete(
 
     new OrderCancelledPublisher(natsWrapper.client).publish({
       id: order.id,
+      version: order.version,
       ticket: {
         id: order.ticket.id, // NOTE: Is this not the local mongoose id for this ticket?
         // Meaning, does this have any relevance for the rest of the services?
