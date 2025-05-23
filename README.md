@@ -129,9 +129,7 @@ Use mocks for external services and unit/integration testing for core logic.
 
 This project is licensed under the MIT License.
 
-🔗 [Click here to download or copy the MIT License](https://choosealicense.com/licenses/mit/)
-
-Place the license text in a file named `LICENSE` at the root of your repository.
+🔗 [MIT License](https://choosealicense.com/licenses/mit/)
 
 ---
 
