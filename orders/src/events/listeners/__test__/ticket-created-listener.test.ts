@@ -4,6 +4,7 @@ import { TicketCreatedEvent } from '@rrpereztickets/common';
 import mongoose from 'mongoose';
 import { TicketCreatedListener } from '../ticket-created-listener';
 import { natsWrapper } from '../../../nats-wrapper';
+import { decode } from 'jsonwebtoken';
 
 const setup = async () => {
   // Create an instance of the listener
@@ -42,4 +43,12 @@ it('creates a ticket and stores it in the database', async () => {
   expect(ticket!.price).toEqual(decodedData.price);
 });
 
-it('acks the received event correctly', () => {});
+it('acks the received event correctly', async () => {
+  const { decodedData, listener, msg } = await setup();
+
+  // call the onMessage function with the data object + message object
+  await listener.onMessage(decodedData, msg);
+
+  // write assertions to make sure the ack function is called
+  expect(msg.ack).toHaveBeenCalled();
+});
