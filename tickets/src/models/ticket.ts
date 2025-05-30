@@ -14,6 +14,8 @@ interface TicketDoc extends mongoose.Document {
   // S: Implementing the Optimistic Concurrency solution mongoose-update-if-current offers
   version: number;
   // E: Implementing the Optimistic Concurrency solution mongoose-update-if-current offers
+  // NOTE: The '?' tells Typescript that this is an optional attribute
+  orderId?: string;
 }
 
 interface TicketModel extends mongoose.Model<TicketDoc> {
@@ -33,6 +35,9 @@ const ticketSchema = new mongoose.Schema(
     userId: {
       type: String,
       required: true,
+    },
+    orderId: {
+      type: String,
     },
   },
   {
