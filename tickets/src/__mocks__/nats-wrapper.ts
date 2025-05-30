@@ -14,4 +14,14 @@ export const natsWrapper = {
         };
       }),
   },
+
+  connection: {
+    jetstream: jest.fn().mockImplementation(() => {
+      null;
+      // return {
+      //   consumers: {
+      //   }
+      // }
+    }),
+  },
 };
