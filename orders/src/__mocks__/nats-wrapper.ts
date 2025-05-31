@@ -15,13 +15,13 @@ export const natsWrapper = {
       }),
   },
 
-  connection: {
-    jetstream: jest.fn().mockImplementation(() => {
-      null;
-      // return {
-      //   consumers: {
-      //   }
-      // }
-    }),
-  },
+  // connection: {
+  //   jetstream: jest.fn().mockImplementation(() => {
+  //     null;
+  //     // return {
+  //     //   consumers: {
+  //     //   }
+  //     // }
+  //   }),
+  // },
 };
