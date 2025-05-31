@@ -19,7 +19,6 @@ export abstract class NatsListener<T extends Event> {
   abstract subject: T['subject'];
   abstract durableWorker: string;
   abstract onMessage(decodedData: T['data'], message: JsMsg): any;
-  // abstract decoder: Codec<unknown>;
   private decoder: Codec<unknown> = JSONCodec();
   protected client: JetStreamClient;
   protected ackWait = 5 * 1000;
