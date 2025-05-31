@@ -11,7 +11,7 @@ interface Event {
 export abstract class BaseNatsPublisher<T extends Event> {
   abstract stream: T['stream'];
   abstract subject: T['subject'];
-  private client: JetStreamClient;
+  protected client: JetStreamClient;
 
   constructor(client: JetStreamClient) {
     this.client = client;

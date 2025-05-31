@@ -22,7 +22,7 @@ export abstract class NatsListener<T extends Event> {
   // abstract decoder: Codec<unknown>;
   private decoder: Codec<unknown> = JSONCodec();
   private connection: NatsConnection;
-  private client: JetStreamClient;
+  protected client: JetStreamClient;
   protected ackWait = 5 * 1000;
 
   constructor(connection: NatsConnection) {
@@ -34,7 +34,6 @@ export abstract class NatsListener<T extends Event> {
     // "listen", makes the strong assumption that this kind of setup, or initialization,
     // process will be shared by all subclasses of NatsListener. TODO: Consider
     // modifying this code to make it more flexible, meaning, make less assumptions.
-    //
     const c = await this.client.consumers.get(this.stream, this.durableWorker);
     const messages = await c.consume();
     for await (const m of messages) {
