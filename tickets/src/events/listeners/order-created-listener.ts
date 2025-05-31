@@ -8,6 +8,7 @@ import {
 import { JsMsg } from 'nats';
 import { orderCreatedWorker } from './queue-group-name';
 import { Ticket } from '../../models/ticket';
+import { TicketUpdatedPublisher } from '../publishers/ticket-updated-publisher';
 
 export class OrderCreatedListener extends NatsListener<OrderCreatedEvent> {
   subject: Subjects.OrderCreated = Subjects.OrderCreated;
@@ -34,6 +35,15 @@ export class OrderCreatedListener extends NatsListener<OrderCreatedEvent> {
     ticket.set({ orderId: decodedData.id });
 
     await ticket.save();
+
+    await new TicketUpdatedPublisher(this.client).publish({
+      id: ticket.id,
+      price: ticket.price,
+      title: ticket.title,
+      userId: ticket.userId,
+      orderId: ticket.orderId,
+      version: ticket.version,
+    });
 
     message.ack();
   }
