@@ -8,7 +8,7 @@ import { decode } from 'jsonwebtoken';
 
 const setup = async () => {
   // Create an instance of the listener
-  const listener = new TicketCreatedListener(natsWrapper.connection);
+  const listener = new TicketCreatedListener(natsWrapper.client);
   // Create fake decodedData and message objects
   const decodedData: TicketCreatedEvent['data'] = {
     id: new mongoose.Types.ObjectId().toHexString(),

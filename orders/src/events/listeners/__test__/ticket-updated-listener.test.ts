@@ -6,7 +6,7 @@ import { TicketUpdatedEvent } from '@rrpereztickets/common';
 
 const setup = async () => {
   // Create an instance of the listener
-  const listener = new TicketUpdatedListener(natsWrapper.connection);
+  const listener = new TicketUpdatedListener(natsWrapper.client);
   // Create fake data for the original ticket
   const data = {
     id: new mongoose.Types.ObjectId().toHexString(),

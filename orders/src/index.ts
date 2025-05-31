@@ -86,8 +86,8 @@ const start = async () => {
       Subjects.TicketUpdated
     );
 
-    new TicketCreatedListener(natsWrapper.connection).listen();
-    new TicketUpdatedListener(natsWrapper.connection).listen();
+    new TicketCreatedListener(natsWrapper.client).listen();
+    new TicketUpdatedListener(natsWrapper.client).listen();
 
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB!!!');

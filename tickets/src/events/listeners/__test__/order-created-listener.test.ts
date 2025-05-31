@@ -7,7 +7,7 @@ import { JsMsg } from 'nats';
 import { OrderCreatedEvent } from '@rrpereztickets/common';
 
 const setup = async () => {
-  const listener = new OrderCreatedListener(natsWrapper.connection);
+  const listener = new OrderCreatedListener(natsWrapper.client);
   const ticket = Ticket.build({ title: 'concert', price: 99, userId: 'sdfa' });
 
   await ticket.save();
