@@ -21,13 +21,11 @@ export abstract class NatsListener<T extends Event> {
   abstract onMessage(decodedData: T['data'], message: JsMsg): any;
   // abstract decoder: Codec<unknown>;
   private decoder: Codec<unknown> = JSONCodec();
-  private connection: NatsConnection;
   protected client: JetStreamClient;
   protected ackWait = 5 * 1000;
 
-  constructor(connection: NatsConnection) {
-    this.connection = connection;
-    this.client = connection.jetstream();
+  constructor(client: JetStreamClient) {
+    this.client = client;
   }
   async listen() {
     // NOTE: Putting the code before this.parseMessage inside the concerte method
