@@ -3,7 +3,7 @@ import { natsWrapper } from '../../../nats-wrapper';
 import { Ticket } from '../../../models/ticket';
 import mongoose from 'mongoose';
 import { OrderStatus } from '@rrpereztickets/common';
-import { JsMsg } from 'nats';
+import { JsMsg, JSONCodec } from 'nats';
 import { OrderCreatedEvent } from '@rrpereztickets/common';
 
 const setup = async () => {
@@ -52,6 +52,15 @@ it('acks the message', async () => {
 it('publishes a ticket updated event', async () => {
   const { listener, data, msg, ticket } = await setup();
   await listener.onMessage(data, msg);
+  const jc = JSONCodec();
 
   expect(natsWrapper.client.publish).toHaveBeenCalled();
+
+  const call = (natsWrapper.client.publish as jest.Mock).mock.calls[0];
+  const subject = call[0];
+  const encodedPayload = call[1];
+  const ticketUpdatedData = jc.decode(encodedPayload); // Decoded payload
+
+  // @ts-ignore
+  expect(data.id).toEqual(ticketUpdatedData.orderId);
 });

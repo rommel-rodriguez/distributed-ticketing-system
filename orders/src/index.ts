@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { natsWrapper } from './nats-wrapper';
-import { NatsConnection } from 'nats';
 
 import { app } from './app';
 

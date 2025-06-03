@@ -1,2 +1,2 @@
 export const orderCreatedWorker = 'ticket-order-created';
-export const orderUpdatedWorker = 'ticket-order-updated';
+export const orderCancelledWorker = 'ticket-order-cancelled';

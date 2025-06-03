@@ -1,27 +1,17 @@
 import mongoose from 'mongoose';
 import { natsWrapper } from './nats-wrapper';
+import { OrderCreatedListener } from './events/listeners/order-created-listener';
+import { OrderCancelledListener } from './events/listeners/order-cancelled-listener';
+import {
+  orderCreatedWorker,
+  orderCancelledWorker,
+} from './events/listeners/queue-group-name';
+import { Subjects, createConsumer } from '@rrpereztickets/common';
 
 import { app } from './app';
 
 type TypeOfNatsWrapper = typeof natsWrapper;
 
-// const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
-//   let natsConnectionClosed;
-//   try {
-//     natsConnectionClosed = await natsWrapper.connection.closed();
-//   } catch (error) {
-//     console.log('Inside NATS Connection Closed Handler');
-//     console.log('Something went wrong while trying to access the connection');
-//     console.log(error);
-//     process.exit();
-//   }
-//   while (true) {
-//     const err = await natsConnectionClosed;
-//     console.log('Connection to NATS Server closed!!!');
-//     console.log(err);
-//     process.exit();
-//   }
-// };
 const handleNatsClose = async (natsWrapper: TypeOfNatsWrapper) => {
   console.log('Inside NATS Connection Closed Handler');
   try {
@@ -80,6 +70,21 @@ const start = async () => {
     // Also, I would need this function to run to forever at least logging whatever
     // made the nats connection to be lost.
     await natsWrapper.setupStream();
+
+    await createConsumer(
+      natsWrapper.connection,
+      orderCreatedWorker,
+      Subjects.OrderCreated
+    );
+    await createConsumer(
+      natsWrapper.connection,
+      orderCancelledWorker,
+      Subjects.OrderCancelled
+    );
+
+    new OrderCreatedListener(natsWrapper.client).listen();
+    new OrderCancelledListener(natsWrapper.client).listen();
+
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB!!!');
   } catch (err) {
