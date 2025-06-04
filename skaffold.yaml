@@ -34,6 +34,14 @@ build:
             src: 'src/**/*.ts'
       docker:
         dockerfile: Dockerfile
+    - image: expiration
+      context: ./expiration
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
 
 manifests:
   rawYaml:
