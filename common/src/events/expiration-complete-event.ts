@@ -4,7 +4,7 @@ import { Streams } from './streams';
 
 export interface ExpirationCompleteEvent extends Event {
   stream: Streams.EventStream;
-  subject: Subjects.TicketCreated;
+  subject: Subjects.ExpirationComplete;
   data: {
     orderId: string;
   };
