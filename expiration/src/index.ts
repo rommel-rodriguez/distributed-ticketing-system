@@ -3,7 +3,9 @@ import { natsWrapper } from './nats-wrapper';
 //   orderCreatedWorker,
 //   orderCancelledWorker,
 // } from './events/listeners/queue-group-name';
+import { OrderCreatedListener } from './events/listeners/order-created-listener';
 import { Subjects, createConsumer } from '@rrpereztickets/common';
+import { orderCreatedWorker } from './events/listeners/queue-group-name';
 
 type TypeOfNatsWrapper = typeof natsWrapper;
 
@@ -44,13 +46,13 @@ const start = async () => {
 
     await natsWrapper.setupStream();
 
-    // await createConsumer(
-    //   natsWrapper.connection,
-    //   orderCreatedWorker,
-    //   Subjects.OrderCreated
-    // );
+    await createConsumer(
+      natsWrapper.connection,
+      orderCreatedWorker,
+      Subjects.OrderCreated
+    );
 
-    // new OrderCreatedListener(natsWrapper.client).listen();
+    new OrderCreatedListener(natsWrapper.client).listen();
 
     console.log('Expiration Service ready to receive');
   } catch (err) {
