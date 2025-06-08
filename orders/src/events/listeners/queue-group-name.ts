@@ -1,2 +1,3 @@
-export const ticketCreatedWorker = 'order-ticket-created';
-export const ticketUpdatedWorker = 'order-ticket-updated';
+export const ticketCreatedWorker = 'orders-ticket-created';
+export const ticketUpdatedWorker = 'orders-ticket-updated';
+export const expirationCompleteWorker = 'orders-expiration-complete';

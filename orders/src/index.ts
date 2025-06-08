@@ -7,9 +7,12 @@ import { TicketCreatedListener } from './events/listeners/ticket-created-listene
 import { TicketUpdatedListener } from './events/listeners/ticket-updated-listener';
 import { createConsumer, Subjects } from '@rrpereztickets/common';
 import {
+  expirationCompleteWorker,
   ticketCreatedWorker,
   ticketUpdatedWorker,
 } from './events/listeners/queue-group-name';
+
+import { ExpirationCompleteListener } from './events/listeners/expiration-complete-listener';
 
 const NATSJS_HOST = 'nats-jets-svc:4222';
 const natsUrl = `nats://${NATSJS_HOST}`;
@@ -84,9 +87,15 @@ const start = async () => {
       ticketUpdatedWorker,
       Subjects.TicketUpdated
     );
+    await createConsumer(
+      natsWrapper.connection,
+      expirationCompleteWorker,
+      Subjects.ExpirationComplete
+    );
 
     new TicketCreatedListener(natsWrapper.client).listen();
     new TicketUpdatedListener(natsWrapper.client).listen();
+    new ExpirationCompleteListener(natsWrapper.client).listen();
 
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB!!!');
