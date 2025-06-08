@@ -18,6 +18,12 @@ export class OrderCancelledListener extends NatsListener<OrderCancelledEvent> {
     decodedData: { id: string; version: number; ticket: { id: string } },
     message: JsMsg
   ) {
+    console.log('[DEBUG] Order Cancelled Payload:');
+    console.log(decodedData);
+
+    console.log("[DEBUG] Order's ticket ID");
+    console.log(decodedData.ticket.id);
+
     const ticket = await Ticket.findById(decodedData.ticket.id);
     if (!ticket) {
       throw new Error('Ticket not found');
