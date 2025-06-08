@@ -47,6 +47,7 @@ const subjects = [
   Subjects.TicketUpdated,
   Subjects.OrderCancelled,
   Subjects.OrderCreated,
+  Subjects.ExpirationComplete,
 ];
 
 /**
