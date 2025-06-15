@@ -27,10 +27,7 @@ export class OrderCreatedListener extends NatsListener<OrderCreatedEvent> {
     const delay =
       new Date(decodedData.expiresAt).getTime() - new Date().getTime();
 
-    await expirationQueue.add(
-      { orderId: decodedData.id }
-      //  { delay }
-    );
+    await expirationQueue.add({ orderId: decodedData.id }, { delay });
 
     message.ack();
   }

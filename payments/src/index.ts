@@ -3,6 +3,12 @@ import { natsWrapper } from './nats-wrapper';
 import { Subjects, createConsumer } from '@rrpereztickets/common';
 
 import { app } from './app';
+import { OrderCreatedListener } from './events/listeners/order-created-listener';
+import {
+  orderCancelledWorker,
+  orderCreatedWorker,
+} from './events/listeners/queue-group-name';
+import { OrderCancelledListener } from './events/listeners/order-cancelled-listener';
 
 type TypeOfNatsWrapper = typeof natsWrapper;
 
@@ -65,13 +71,19 @@ const start = async () => {
     // made the nats connection to be lost.
     await natsWrapper.setupStream();
 
-    // await createConsumer(
-    //   natsWrapper.connection,
-    //   orderCreatedWorker,
-    //   Subjects.OrderCreated
-    // );
+    await createConsumer(
+      natsWrapper.connection,
+      orderCreatedWorker,
+      Subjects.OrderCreated
+    );
+    await createConsumer(
+      natsWrapper.connection,
+      orderCancelledWorker,
+      Subjects.OrderCancelled
+    );
 
-    // new OrderCreatedListener(natsWrapper.client).listen();
+    new OrderCreatedListener(natsWrapper.client).listen();
+    new OrderCancelledListener(natsWrapper.client).listen();
 
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB!!!');
