@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
+import { Stripe } from 'stripe';
 import { body } from 'express-validator';
-import bodyParser from 'body-parser'
+import bodyParser from 'body-parser';
 
 import {
   validateRequest,
@@ -18,16 +19,14 @@ const router = express.Router();
 
 router.post(
   '/api/payments/stripe-webhook',
+  express.raw({ type: 'application/json' }),
   [],
   validateRequest,
-  async (req: Request, res: Response) => {}
-);
-
-
-  // Stripe needs the raw body to verify signatures
-  bodyParser.raw({ type: "application/json" }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"] as string;
+  async (req: Request, res: Response) => {
+    //TODO: Have to emit some events from this handler, at the very least
+    // events like PaymentConfirmed and PaymentFaield, or even PaymentRequiresFurther
+    // action in cases like SCA and 3-D secure.
+    const sig = req.headers['stripe-signature'] as string;
     let event: Stripe.Event;
 
     try {
@@ -41,12 +40,12 @@ router.post(
     }
 
     switch (event.type) {
-      case "payment_intent.succeeded": {
+      case 'payment_intent.succeeded': {
         const pi = event.data.object as Stripe.PaymentIntent;
         // ✅ Fulfill order tied to pi.id
         break;
       }
-      case "payment_intent.payment_failed": {
+      case 'payment_intent.payment_failed': {
         const pi = event.data.object as Stripe.PaymentIntent;
         // ❌ Notify user / log failure
         break;
@@ -57,3 +56,5 @@ router.post(
     }
 
     res.json({ received: true });
+  }
+);
