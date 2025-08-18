@@ -12,7 +12,12 @@ import {
 
 const app = express();
 app.set('trust proxy', true);
-app.use(json());
+// app.use(json());
+app.use((req, res, next) => {
+  // Prefer req.path to ignore querystrings; handle variations if needed
+  if (req.path === '/payments/stripe-webhook') return next();
+  return express.json()(req, res, next);
+});
 app.use(
   cookieSession({
     signed: false,
