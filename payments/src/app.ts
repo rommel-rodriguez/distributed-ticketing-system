@@ -11,12 +11,13 @@ import {
 } from '@rrpereztickets/common';
 
 const app = express();
+const jsonParser = express.json();
 app.set('trust proxy', true);
 // app.use(json());
 app.use((req, res, next) => {
   // Prefer req.path to ignore querystrings; handle variations if needed
   if (req.path === '/payments/stripe-webhook') return next();
-  return express.json()(req, res, next);
+  return jsonParser(req, res, next);
 });
 app.use(
   cookieSession({
