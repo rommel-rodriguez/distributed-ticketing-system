@@ -5,6 +5,14 @@ NAMESPACE=ticketing
 STRIPE_WEBHOOK_PORT=3000
 TMUX_SESSION="micros"
 PROJECT_DIR="$(dirname "$0")"
+STOP_MINIKUBE=false
+
+while getopts "q" opt;do
+    case $opt in
+        q)  STOP_MINIKUBE=true;;
+        *)  echo "Invalid Option: $OPTARG";exit 1;;
+    esac
+done
 
 start_tmux_session(){
     (cd "${PROJECT_DIR}";tmux new-session -d -s "$TMUX_SESSION")
@@ -14,9 +22,14 @@ handle_sigint() {
     echo "Sigint caught, cleaning up..."
     echo ""
     pkill -2 skaffold && \
-        echo "Waiting for Skaffold to close\n\n" && \
-        sleep 1m && \
-        minikube stop
+        echo "Waiting for Skaffold to close\n\n"
+        while [[ $(pgrep -c -i skaffold) -ne 0 ]];do
+            sleep 10s
+        done 
+        if $STOP_MINIKUBE;then
+            echo "Stopping Minikube ..."
+            minikube stop
+        fi
     exit
 }
 
@@ -52,7 +65,7 @@ main() {
     # Start the stripe service for it to call webhooks
     # stripe listen --forward-to http://localhost:3000/api/payments/stripe-webhook &>/tmp/strip.log &
     tmux new-window -t "$TMUX_SESSION" -n "stripe-listen" \
-        "stripe listen --forward-to http://localhost:3000/api/payments/stripe-webhook"
+        "stripe listen --forward-to http://ticketing.local/api/payments/stripe-webhook"
     # Grab the secret programmatically
     export WHSEC=$(stripe listen --print-secret)
 
