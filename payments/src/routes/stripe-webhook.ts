@@ -53,11 +53,33 @@ router.post(
     switch (event.type) {
       case 'payment_intent.succeeded': {
         const pi = event.data.object as Stripe.PaymentIntent;
+        console.info('✅ payment_intent.succeeded received', {
+          paymentIntentId: pi.id,
+          amount: pi.amount,
+          currency: pi.currency,
+          customer: pi.customer,
+          status: pi.status,
+          created: new Date(pi.created * 1000).toISOString(),
+        });
         // ✅ Fulfill order tied to pi.id
         break;
       }
       case 'payment_intent.payment_failed': {
         const pi = event.data.object as Stripe.PaymentIntent;
+        // Log failure cause details (these fields may be nested)
+        const failureMsg = pi.last_payment_error?.message;
+        const failureCode = pi.last_payment_error?.code;
+
+        console.warn('❌ payment_intent.payment_failed received', {
+          paymentIntentId: pi.id,
+          amount: pi.amount,
+          currency: pi.currency,
+          customer: pi.customer,
+          failureMessage: failureMsg,
+          failureCode,
+          status: pi.status,
+          created: new Date(pi.created * 1000).toISOString(),
+        });
         // ❌ Notify user / log failure
         break;
       }
