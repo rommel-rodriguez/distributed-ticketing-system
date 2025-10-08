@@ -17,7 +17,7 @@ app.set('trust proxy', true);
 // app.use(json());
 app.use((req, res, next) => {
   // Prefer req.path to ignore querystrings; handle variations if needed
-  if (req.path === '/payments/stripe-webhook') return next();
+  if (req.path === '/api/payments/stripe-webhook') return next();
   return jsonParser(req, res, next);
 });
 app.use(
