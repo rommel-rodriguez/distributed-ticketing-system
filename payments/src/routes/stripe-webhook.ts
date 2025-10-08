@@ -27,7 +27,7 @@ router.post(
     // events like PaymentConfirmed and PaymentFailed, or even PaymentRequiresFurther
     // action in cases like SCA and 3-D secure.
     console.log('Request Received in stripe-webhook');
-    console.log(req);
+    // console.log(req);
 
     const sig = req.headers['stripe-signature'] as string;
     let event: Stripe.Event;
