@@ -24,7 +24,7 @@ router.post(
   validateRequest,
   async (req: Request, res: Response) => {
     //TODO: Have to emit some events from this handler, at the very least
-    // events like PaymentConfirmed and PaymentFaield, or even PaymentRequiresFurther
+    // events like PaymentConfirmed and PaymentFailed, or even PaymentRequiresFurther
     // action in cases like SCA and 3-D secure.
     const sig = req.headers['stripe-signature'] as string;
     let event: Stripe.Event;
