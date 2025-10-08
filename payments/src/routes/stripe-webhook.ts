@@ -39,6 +39,11 @@ router.post(
         process.env.STRIPE_WEBHOOK_SECRET!
       );
     } catch (err: any) {
+      console.error('Webhook signature verification failed:', {
+        message: err.message,
+        type: err.type, // often 'StripeSignatureVerificationError'
+        headers: req.headers, // helpful: check 'stripe-signature'
+      });
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
