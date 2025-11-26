@@ -1,0 +1,103 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+env:
+  REGISTRY: docker.io/${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_PREFIX: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/ticketing
+  TAG: ${{ github.sha }}
+  GKE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.GKE_STAGING_CLUSTER }}
+  GKE_LOCATION: ${{ secrets.GKE_STAGING_LOCATION }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: auth
+            path: auth
+          - name: client
+            path: client
+          - name: expiration
+            path: expiration
+          - name: orders
+            path: orders
+          - name: payments
+            path: payments
+          - name: tickets
+            path: tickets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Hub login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.name }} (pinned to commit SHA)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.path }}
+          file: ./${{ matrix.path }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ env.TAG }}
+          platforms: linux/amd64
+
+    outputs:
+      tag: ${{ env.TAG }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_LOCATION }}
+          project_id: ${{ env.GKE_PROJECT }}
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.3"
+
+      - name: Ensure namespace and pull secret
+        run: |
+          kubectl create namespace ticketing-staging --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n ticketing-staging create secret docker-registry dockerhub-creds \
+            --docker-username=${{ secrets.DOCKERHUB_USERNAME }} \
+            --docker-password=${{ secrets.DOCKERHUB_TOKEN }} \
+            --docker-server=https://index.docker.io/v1/ \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Render and apply manifests
+        working-directory: infra/k8s/overlays/staging
+        run: |
+          TAG=${{ needs.build-and-push.outputs.tag }}
+          SERVICES="auth client expiration orders payments tickets"
+          for svc in $SERVICES; do
+            kustomize edit set image docker.io/example/ticketing-${svc}=${IMAGE_PREFIX}-${svc}:${TAG}
+          done
+          kustomize build . | kubectl apply -f -

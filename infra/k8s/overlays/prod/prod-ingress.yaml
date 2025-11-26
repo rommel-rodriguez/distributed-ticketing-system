@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ticketing-ingress
+  annotations:
+    kubernetes.io/ingress.class: gce
+    networking.gke.io/managed-certificates: ticketing-prod-cert
+    kubernetes.io/ingress.global-static-ip-name: ticketing-prod-ip
+spec:
+  rules:
+    - host: ticketing.example.com
+      http:
+        paths:
+          - path: /api/payments
+            pathType: Prefix
+            backend:
+              service:
+                name: payments-svc
+                port:
+                  number: 3000
+          - path: /api/orders
+            pathType: Prefix
+            backend:
+              service:
+                name: orders-svc
+                port:
+                  number: 3000
+          - path: /api/tickets
+            pathType: Prefix
+            backend:
+              service:
+                name: tickets-svc
+                port:
+                  number: 3000
+          - path: /api/users
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-svc
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: client-svc
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - ticketing.example.com
+      secretName: ticketing-prod-tls

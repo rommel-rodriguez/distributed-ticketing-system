@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: auth-mongo
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        storageClassName: premium-rwo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tickets-mongo
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        storageClassName: premium-rwo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: orders-mongo
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        storageClassName: premium-rwo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: payments-mongo
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        storageClassName: premium-rwo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: expiration-redis
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        storageClassName: premium-rwo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nats-jets
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: nats-data
+      spec:
+        storageClassName: premium-rwo
