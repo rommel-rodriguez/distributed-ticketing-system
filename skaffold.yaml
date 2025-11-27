@@ -52,9 +52,7 @@ build:
             dest: .
 
 profiles:
-  - name: kustomize-local
-    activation:
-      - command: dev
+  - name: kmz-local
     manifests:
       kustomize:
         paths:
