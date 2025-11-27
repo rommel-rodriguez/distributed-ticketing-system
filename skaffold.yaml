@@ -51,18 +51,22 @@ build:
           - src: 'src/**/*.ts'
             dest: .
 
-manifests:
-  kustomize:
-    paths:
-      - infra/k8s/overlays/local
-deploy:
-  kubectl: {}
-
 profiles:
+  - name: kustomize-local
+    activation:
+      - command: dev
+    manifests:
+      kustomize:
+        paths:
+          - infra/k8s/overlays/local
+    deploy:
+      kubectl: {}
+
   - name: legacy-raw
     manifests:
       rawYaml:
-        - ./infra/k8s/**/*
+        - infra/k8s/deploys/*.k8s.yaml
+        - infra/k8s/ingresses/*.k8s.yaml
     deploy:
       kubectl:
         defaultNamespace: "ticketing"
