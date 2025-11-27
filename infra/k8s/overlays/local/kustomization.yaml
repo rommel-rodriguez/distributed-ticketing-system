@@ -51,3 +51,4 @@ patchesStrategicMerge:
   - local-pullpolicy.yaml
   - local-ingress.yaml
   - local-imagepullsecrets.yaml
+  - local-expiration-probes.yaml
