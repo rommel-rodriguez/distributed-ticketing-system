@@ -50,3 +50,4 @@ replicas:
 patchesStrategicMerge:
   - local-pullpolicy.yaml
   - local-ingress.yaml
+  - local-imagepullsecrets.yaml
