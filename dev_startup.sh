@@ -57,7 +57,7 @@ main() {
         sleep 50s && \
         echo "Changing to namespace ${NAMESPACE}" && \
         kubectl config set-context minikube --namespace=${NAMESPACE} && \
-        tmux new-window -t "${TMUX_SESSION}" -n skaffold -c "${PROJECT_DIR}" 'skaffold dev' 
+        tmux new-window -t "${TMUX_SESSION}" -n skaffold -c "${PROJECT_DIR}" 'skaffold dev -p kmz-local' 
         # (cd ${PROJECT_DIR}; skaffold dev ) &
 
 
