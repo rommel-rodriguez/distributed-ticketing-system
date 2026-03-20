@@ -52,15 +52,13 @@ router.post(
           // TODO: Set a 'return_url' here, so that in the case the client is presented
           // with a 3ds challenge the client returns to our designated location
         },
-        { idempotencyKey: req.header('Idempotency-Key') ?? undefined }
+        { idempotencyKey: req.header('Idempotency-Key') ?? undefined },
       );
       res.json({ clientSecret: paymentIntent.client_secret });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
-
-    res.send({ success: true });
-  }
+  },
 );
 
 export { router as createChargeRouter };
