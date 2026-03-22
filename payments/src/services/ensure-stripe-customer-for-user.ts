@@ -1,6 +1,7 @@
-import { stripe } from '../stripe';
-import { StripeCustomer } from '../models/stripe-customer';
+import Stripe from 'stripe';
 import { BadRequestError } from '@rrpereztickets/common';
+import { StripeCustomer } from '../models/stripe-customer';
+import { stripe } from '../stripe';
 
 export interface EnsureStripeCustomerInput {
   userId: string;
@@ -12,6 +13,75 @@ export interface EnsureStripeCustomerResult {
   createdNew: boolean;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const escapeStripeSearchLiteral = (value: string) =>
+  value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+const isLiveCustomer = (
+  c: Stripe.Customer | Stripe.DeletedCustomer,
+): c is Stripe.Customer => !('deleted' in c);
+
+const findStripeCustomerByAppUserId = async (
+  userId: string,
+): Promise<Stripe.Customer | null> => {
+  const query = `metadata['appUserId']:'${escapeStripeSearchLiteral(userId)}'`;
+  const res = await stripe.customers.search({ query, limit: 10 });
+
+  const matches = res.data
+    .filter(isLiveCustomer)
+    .filter((c) => c.metadata?.appUserId === userId)
+    .sort((a, b) => b.created - a.created);
+
+  return matches[0] ?? null;
+};
+
+const reconcileStripeCustomerMappingFromStripe = async (input: {
+  userId: string;
+  email?: string;
+}): Promise<EnsureStripeCustomerResult | null> => {
+  const existing = await StripeCustomer.findOne({ userId: input.userId })
+    .select({ stripeCustomerId: 1, _id: 0 })
+    .lean<{ stripeCustomerId: string }>()
+    .exec();
+
+  if (existing) {
+    return { stripeCustomerId: existing.stripeCustomerId, createdNew: false };
+  }
+
+  let found: Stripe.Customer | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    found = await findStripeCustomerByAppUserId(input.userId);
+    if (found) break;
+    await sleep(250 * attempt);
+  }
+
+  if (!found) return null;
+
+  try {
+    const mapping = StripeCustomer.build({
+      userId: input.userId,
+      email: input.email,
+      stripeCustomerId: found.id,
+    });
+    await mapping.save();
+
+    return { stripeCustomerId: mapping.stripeCustomerId, createdNew: false };
+  } catch (err: any) {
+    if (err?.code === 11000) {
+      const winner = await StripeCustomer.findOne({ userId: input.userId })
+        .select({ stripeCustomerId: 1, _id: 0 })
+        .lean<{ stripeCustomerId: string }>()
+        .exec();
+
+      if (winner) {
+        return { stripeCustomerId: winner.stripeCustomerId, createdNew: false };
+      }
+    }
+    throw err;
+  }
+};
+
 const createStripeCustomer = async (input: {
   userId: string;
   email?: string;
@@ -22,15 +92,14 @@ const createStripeCustomer = async (input: {
         email: input.email,
         metadata: { appUserId: input.userId },
       },
-      // Helps retries; still keep DB unique index for race protection
       { idempotencyKey: `customer-create:${input.userId}` },
     );
     return customer.id;
-  } catch (err: any) {
-    const type = err?.type; // e.g. StripeInvalidRequestError, StripeAPIError
-    const status = err?.statusCode; // HTTP-like status from Stripe
+  } catch (err: unknown) {
+    const e = err as { type?: string; statusCode?: number };
+    const type = e.type;
+    const status = e.statusCode;
 
-    // Client/input issues -> 4xx in your API
     if (
       type === 'StripeInvalidRequestError' ||
       status === 400 ||
@@ -39,7 +108,6 @@ const createStripeCustomer = async (input: {
       throw new BadRequestError('Invalid payment customer data');
     }
 
-    // Misconfiguration -> internal/server alert
     if (
       type === 'StripeAuthenticationError' ||
       status === 401 ||
@@ -48,12 +116,11 @@ const createStripeCustomer = async (input: {
       throw new Error('Stripe configuration error');
     }
 
-    // Transient upstream issues -> 503 (optionally retried)
     if (
       type === 'StripeAPIError' ||
       type === 'StripeConnectionError' ||
       status === 429 ||
-      status >= 500
+      (status !== undefined && status >= 500)
     ) {
       throw new Error('Payment provider temporarily unavailable');
     }
@@ -66,10 +133,21 @@ export const ensureStripeCustomerForUser = async ({
   userId,
   email,
 }: EnsureStripeCustomerInput): Promise<EnsureStripeCustomerResult> => {
-  const existing = await StripeCustomer.findOne({ userId });
+  const existing = await StripeCustomer.findOne({ userId })
+    .select({ stripeCustomerId: 1, _id: 0 })
+    .lean<{ stripeCustomerId: string }>()
+    .exec();
+
   if (existing) {
     return { stripeCustomerId: existing.stripeCustomerId, createdNew: false };
   }
+
+  // Reconcile first in case Stripe write previously succeeded but DB write failed.
+  const reconciled = await reconcileStripeCustomerMappingFromStripe({
+    userId,
+    email,
+  });
+  if (reconciled) return reconciled;
 
   const customerId = await createStripeCustomer({ userId, email });
 
@@ -84,11 +162,24 @@ export const ensureStripeCustomerForUser = async ({
     return { stripeCustomerId: mapping.stripeCustomerId, createdNew: true };
   } catch (err: any) {
     if (err?.code === 11000) {
-      const winner = await StripeCustomer.findOne({ userId });
+      const winner = await StripeCustomer.findOne({ userId })
+        .select({ stripeCustomerId: 1, _id: 0 })
+        .lean<{ stripeCustomerId: string }>()
+        .exec();
+
       if (winner) {
         return { stripeCustomerId: winner.stripeCustomerId, createdNew: false };
       }
     }
+
+    // Optional: attempt one last reconcile before failing hard
+    const reconciledAfterFailure =
+      await reconcileStripeCustomerMappingFromStripe({
+        userId,
+        email,
+      });
+    if (reconciledAfterFailure) return reconciledAfterFailure;
+
     throw err;
   }
 };
