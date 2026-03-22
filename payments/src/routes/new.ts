@@ -13,6 +13,8 @@ import {
 import { stripe } from '../stripe';
 
 import { Order } from '../models/order';
+import { StripeCustomer } from '../models/stripe-customer';
+import { ensureStripeCustomerForUser } from '../services/ensure-stripe-customer-for-user';
 
 const router = express.Router();
 
@@ -42,19 +44,33 @@ router.post(
       throw new BadRequestError('Cannot pay for a cancelled order');
     }
 
+    if (!req.currentUser) {
+      throw new BadRequestError('Request must include the user information');
+    }
+
+    if (!req.currentUser.id) {
+      throw new BadRequestError('Request must include the user id');
+    }
+
+    const { stripeCustomerId, createdNew } = await ensureStripeCustomerForUser({
+      userId: req.currentUser.id,
+      email: req.currentUser.email,
+    });
+
     try {
       const paymentIntent = await stripe.paymentIntents.create(
         {
           amount: order.price * 100,
           currency,
-          customer: order.userId,
+          customer: stripeCustomerId,
           automatic_payment_methods: { enabled: true },
+          metadata: { orderId: order.id, userId: req.currentUser.id },
           // TODO: Set a 'return_url' here, so that in the case the client is presented
           // with a 3ds challenge the client returns to our designated location
         },
         { idempotencyKey: req.header('Idempotency-Key') ?? undefined },
       );
-      res.json({ clientSecret: paymentIntent.client_secret });
+      res.status(201).json({ clientSecret: paymentIntent.client_secret });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
