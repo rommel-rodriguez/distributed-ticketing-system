@@ -2,6 +2,8 @@ import Stripe from 'stripe';
 import { BadRequestError } from '@rrpereztickets/common';
 import { StripeCustomer } from '../models/stripe-customer';
 import { stripe } from '../stripe';
+// TODO: Create custom errors, with error codes (and possibly HTTP codes as well) to
+// wrap the errors emitted by this layer
 
 export interface EnsureStripeCustomerInput {
   userId: string;
