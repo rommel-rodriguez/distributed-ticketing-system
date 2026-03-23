@@ -19,6 +19,7 @@ jobs:
   payments-integration:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    environment: DEV
     steps:
       - name: Checkout
         uses: actions/checkout@v4
