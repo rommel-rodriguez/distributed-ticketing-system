@@ -13,7 +13,6 @@ import {
 import { stripe } from '../stripe';
 
 import { Order } from '../models/order';
-import { StripeCustomer } from '../models/stripe-customer';
 import { ensureStripeCustomerForUser } from '../services/ensure-stripe-customer-for-user';
 
 const router = express.Router();
