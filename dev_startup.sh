@@ -57,7 +57,7 @@ main() {
         sleep 50s && \
         echo "Changing to namespace ${NAMESPACE}" && \
         kubectl config set-context minikube --namespace=${NAMESPACE} && \
-        tmux new-window -t "${TMUX_SESSION}" -n skaffold -c "${PROJECT_DIR}" 'skaffold dev' 
+        tmux new-window -t "${TMUX_SESSION}" -n skaffold -c "${PROJECT_DIR}" 'skaffold dev -p kmz-local' 
         # (cd ${PROJECT_DIR}; skaffold dev ) &
 
 
@@ -83,7 +83,7 @@ main() {
         ## kubectl port-forward svc/payments-svc 3000:$STRIPE_WEBHOOK_PORT &
 
         # Store as a Kubernetes Secret your pod can read
-        kubectl create secret generic stripe-webhook \
+        kubectl create secret generic stripe-webhook-secret \
             --from-literal=STRIPE_WEBHOOK_SECRET="$WHSEC" \
             --dry-run=client -o yaml | kubectl apply -f -
     fi

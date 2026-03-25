@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ticketing-prod
+resources:
+  - ../../base
+images:
+  - name: docker.io/example/ticketing-auth
+    newName: docker.io/your-dockerhub-user/auth
+    newTag: latest
+  - name: docker.io/example/ticketing-client
+    newName: docker.io/your-dockerhub-user/client
+    newTag: latest
+  - name: docker.io/example/ticketing-expiration
+    newName: docker.io/your-dockerhub-user/expiration
+    newTag: latest
+  - name: docker.io/example/ticketing-orders
+    newName: docker.io/your-dockerhub-user/orders
+    newTag: latest
+  - name: docker.io/example/ticketing-payments
+    newName: docker.io/your-dockerhub-user/payments
+    newTag: latest
+  - name: docker.io/example/ticketing-tickets
+    newName: docker.io/your-dockerhub-user/tickets
+    newTag: latest
+replicas:
+  - name: auth
+    count: 3
+  - name: client
+    count: 3
+  - name: expiration
+    count: 3
+  - name: orders
+    count: 3
+  - name: payments
+    count: 3
+  - name: tickets
+    count: 3
+  - name: nats-jets
+    count: 1
+  - name: auth-mongo
+    count: 1
+  - name: tickets-mongo
+    count: 1
+  - name: orders-mongo
+    count: 1
+  - name: payments-mongo
+    count: 1
+  - name: expiration-redis
+    count: 1
+patchesStrategicMerge:
+  - prod-ingress.yaml
+  - storageclass-patch.yaml

@@ -1,7 +1,15 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_KEY!, {
-  //apiVersion: '2025-05-28.basil',
-  // apiVersion: '2025-07-30.basil',
+const config: Stripe.StripeConfig = {
   apiVersion: '2025-07-30.basil' as unknown as Stripe.LatestApiVersion,
-});
+  maxNetworkRetries: 2,
+};
+
+if (process.env.STRIPE_API_HOST) {
+  config.protocol =
+    (process.env.STRIPE_API_PROTOCOL as 'http' | 'https') ?? 'http';
+  config.host = process.env.STRIPE_API_HOST;
+  config.port = Number(process.env.STRIPE_API_PORT ?? 12111);
+}
+
+export const stripe = new Stripe(process.env.STRIPE_KEY!, config);

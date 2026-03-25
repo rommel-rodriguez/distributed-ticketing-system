@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nats-jets
+  labels:
+    app: nats-jets
+spec:
+  serviceName: nats-jets-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats-jets
+  template:
+    metadata:
+      labels:
+        app: nats-jets
+    spec:
+      containers:
+        - name: natsjs
+          image: nats:2.10.17-alpine3.20
+          args:
+            - "-js"
+            - "-p"
+            - "4222"
+            - "-m"
+            - "8222"
+            - "-D"
+          ports:
+            - containerPort: 4222
+              name: client
+            - containerPort: 8222
+              name: monitoring
+          volumeMounts:
+            - name: nats-data
+              mountPath: /data/jetstream
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            tcpSocket:
+              port: 4222
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4222
+            initialDelaySeconds: 15
+            periodSeconds: 20
+  volumeClaimTemplates:
+    - metadata:
+        name: nats-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats-jets-svc
+  labels:
+    app: nats-jets
+spec:
+  selector:
+    app: nats-jets
+  ports:
+    - port: 4222
+      targetPort: 4222
+      protocol: TCP
+      name: client
+    - port: 8222
+      targetPort: 8222
+      protocol: TCP
+      name: monitoring

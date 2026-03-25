@@ -1,0 +1,55 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017" # optional, handy for local debugging
+    healthcheck:
+      # Important: test runner should not start until Mongo is actually ready
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js"] # Important: enable JetStream to match your app assumptions
+    ports:
+      - "4222:4222"
+
+  stripe-mock:
+    image: stripe/stripe-mock:latest
+    ports:
+      - "12111:12111"
+
+  payments-tests:
+    image: node:20-alpine
+    working_dir: /work/payments
+    volumes:
+      - ./:/work
+    # Important: run tests from container so CI host setup is minimal and reproducible
+    command: >
+      sh -lc "npm ci && npm run test:integration"
+    environment:
+      CI: "true"
+      JWT_KEY: "integration-secret"
+      MONGO_URI: "mongodb://mongo:27017/payments-integration"
+      NATS_URL: "nats://nats:4222"
+      NATS_CLIENT_ID: "payments-int-compose"
+      NATS_CLUSTER_ID: "ticketing"
+
+      # Stripe testmode key for stripe-mock
+      STRIPE_KEY: "sk_test_123"
+
+      # Important: route Stripe SDK calls to stripe-mock container
+      STRIPE_API_PROTOCOL: "http"
+      STRIPE_API_HOST: "stripe-mock"
+      STRIPE_API_PORT: "12111"
+
+      STRIPE_WEBHOOK_SECRET: "whsec_test_local"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      stripe-mock:
+        condition: service_started
