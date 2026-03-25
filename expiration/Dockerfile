@@ -1,5 +1,5 @@
 FROM node:20.12-alpine 
-LABEL maintainer=" rommelrodperez@gmail.com"
+LABEL maintainer="rommelrodperez@gmail.com"
 
 WORKDIR /app
 

@@ -1,5 +1,5 @@
 FROM node:alpine
-LABEL maintainer=" rommelrodperez@gmail.com"
+LABEL maintainer="rommelrodperez@gmail.com"
 
 WORKDIR /app
 COPY package.json .
