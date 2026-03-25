@@ -1,5 +1,6 @@
 FROM node:20.12-alpine 
 LABEL maintainer="rommelrodperez@gmail.com"
+LABEL org.opencontainers.image.source="https://github.com/rommel-rodriguez/distributed-ticketing-system/"
 
 WORKDIR /app
 
