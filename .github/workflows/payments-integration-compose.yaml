@@ -1,13 +1,9 @@
 name: "Payments microservice integration tests"
 
 on:
-  push:
-    paths:
-      - "payments/**"
-      - "common/**"
-      - "docker-compose.integration.yml"
-      - ".github/workflows/payments-integration-compose.yaml"
   pull_request:
+    branches:
+      - main
     paths:
       - "payments/**"
       - "common/**"
