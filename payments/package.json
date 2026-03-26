@@ -5,16 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node-dev --poll src/index.ts",
-    "test": "jest --watchAll --no-cache",
-    "test:ci": "jest --no-cache --runInBand --watchAll=false",
-    "test:integration": "jest --config jest.integration.config.js --runInBand --watchAll=false"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "./src/test/integration/setup.inmemory.ts"
-    ]
+    "test": "npm run test:ci:fast",
+    "test:unit": "jest --config jest.unit.config.js --runInBand --watchAll=false --passWithNoTests",
+    "test:integration": "jest --config jest.integration.config.js --runInBand --watchAll=false --passWithNoTests",
+    "test:system": "jest --config jest.system.config.js --runInBand --watchAll=false --passWithNoTests",
+    "test:ci:fast": "npm run test:unit && npm run test:integration",
+    "test:ci:full": "npm run test:ci:fast && npm run test:system"
   },
   "keywords": [],
   "author": "",

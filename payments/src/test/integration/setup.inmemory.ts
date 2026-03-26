@@ -13,6 +13,7 @@ declare global {
 let mongo: any;
 beforeAll(async () => {
   process.env.JWT_KEY = 'ASDFDDSFAS';
+  process.env.STRIPE_KEY = process.env.STRIPE_KEY || 'sk_test_inmemory';
   mongo = await MongoMemoryServer.create();
   const mongoUri = mongo.getUri();
 

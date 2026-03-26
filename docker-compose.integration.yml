@@ -28,7 +28,7 @@ services:
       - ./:/work
     # Important: run tests from container so CI host setup is minimal and reproducible
     command: >
-      sh -lc "npm ci && npm run test:integration"
+      sh -lc "npm ci && npm run test:system"
     environment:
       CI: "true"
       JWT_KEY: "integration-secret"
