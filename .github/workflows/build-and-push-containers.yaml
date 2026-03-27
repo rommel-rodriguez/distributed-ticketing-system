@@ -8,6 +8,17 @@ on:
       REGISTRY_TOKEN:
         # required: true
         description: "Registry access token for automated push to registry"
+    inputs:
+      service:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      platforms:
+        required: false
+        type: string
+        default: linux/amd6
 
 jobs:
   build-and-push:
@@ -28,14 +39,12 @@ jobs:
           username: ${{ github.actor }}
           # password: ${{ secrets.REGISTRY_TOKEN }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push using commit SHA as tag 
+      - name: Build and push ${{ inputs.service }} using commit SHA as tag 
         uses: docker/build-push-action@v5
         with:
-          context: ./orders
+          context: ${{ inputs.context }} 
           push: true
+          platforms: ${{ inputs.platforms }} 
           tags: |
             ghcr.io/${{ github.repository_owner }}/orders:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/orders:latest
-          platforms: linux/amd64
-
-          
