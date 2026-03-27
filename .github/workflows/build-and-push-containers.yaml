@@ -12,6 +12,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write # Needed for GHCR
     steps:
       - name: Checkout
         uses: actions/checkout@v4 
