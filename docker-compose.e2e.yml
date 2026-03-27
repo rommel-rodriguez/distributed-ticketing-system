@@ -1,0 +1,151 @@
+services:
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-m", "8222"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mongo-auth:
+    image: mongo:7
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo-tickets:
+    image: mongo:7
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo-orders:
+    image: mongo:7
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo-payments:
+    image: mongo:7
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  stripe-mock:
+    image: stripe/stripe-mock:latest
+
+  auth:
+    build:
+      context: .
+      dockerfile: e2e/docker/auth.Dockerfile
+    environment:
+      NODE_ENV: test
+      JWT_KEY: e2e-jwt-key
+      MONGO_URI: mongodb://mongo-auth:27017/auth
+    depends_on:
+      mongo-auth:
+        condition: service_healthy
+
+  tickets:
+    build:
+      context: .
+      dockerfile: e2e/docker/tickets.Dockerfile
+    environment:
+      NODE_ENV: test
+      JWT_KEY: e2e-jwt-key
+      MONGO_URI: mongodb://mongo-tickets:27017/tickets
+      NATS_URL: nats://nats:4222
+      NATS_CLIENT_ID: tickets-e2e
+      NATS_CLUSTER_ID: ticketing
+    depends_on:
+      nats:
+        condition: service_healthy
+      mongo-tickets:
+        condition: service_healthy
+
+  orders:
+    build:
+      context: .
+      dockerfile: e2e/docker/orders.Dockerfile
+    environment:
+      NODE_ENV: test
+      JWT_KEY: e2e-jwt-key
+      MONGO_URI: mongodb://mongo-orders:27017/orders
+      NATS_URL: nats://nats:4222
+      NATS_CLIENT_ID: orders-e2e
+      NATS_CLUSTER_ID: ticketing
+    depends_on:
+      nats:
+        condition: service_healthy
+      mongo-orders:
+        condition: service_healthy
+
+  payments:
+    build:
+      context: .
+      dockerfile: e2e/docker/payments.Dockerfile
+    environment:
+      NODE_ENV: test
+      JWT_KEY: e2e-jwt-key
+      MONGO_URI: mongodb://mongo-payments:27017/payments
+      NATS_URL: nats://nats:4222
+      NATS_CLIENT_ID: payments-e2e
+      NATS_CLUSTER_ID: ticketing
+      STRIPE_KEY: sk_test_123
+      STRIPE_API_PROTOCOL: http
+      STRIPE_API_HOST: stripe-mock
+      STRIPE_API_PORT: "12111"
+      STRIPE_WEBHOOK_SECRET: whsec_test_local
+    depends_on:
+      nats:
+        condition: service_healthy
+      mongo-payments:
+        condition: service_healthy
+      stripe-mock:
+        condition: service_started
+
+  expiration:
+    build:
+      context: .
+      dockerfile: e2e/docker/expiration.Dockerfile
+    environment:
+      NODE_ENV: test
+      NATS_URL: nats://nats:4222
+      NATS_CLIENT_ID: expiration-e2e
+      NATS_CLUSTER_ID: ticketing
+      REDIS_HOST: redis
+    depends_on:
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  ingress:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./e2e/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth
+      - tickets
+      - orders
+      - payments
+      - expiration

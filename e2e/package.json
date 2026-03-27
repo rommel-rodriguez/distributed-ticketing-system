@@ -1,0 +1,16 @@
+{
+  "name": "ticketing-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cross-service E2E tests for the ticketing microservices",
+  "scripts": {
+    "test": "npm run test:smoke",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:all": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "typescript": "^5.6.3"
+  }
+}

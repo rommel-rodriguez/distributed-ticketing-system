@@ -1,4 +1,4 @@
-name: "Payments microservice integration tests"
+name: "Payments microservice system tests"
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  payments-integration:
+  payments-system:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: DEV
@@ -29,7 +29,7 @@ jobs:
       - name: Start dependencies
         run: docker compose -f docker-compose.integration.yml up -d mongo nats stripe-mock
 
-      - name: Run payments integration tests
+      - name: Run payments system tests
         run: docker compose -f docker-compose.integration.yml run --rm payments-tests
 
       - name: Tear down
