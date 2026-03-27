@@ -7,6 +7,23 @@ on:
 
 jobs:
   build-and-push-services:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - service: auth
+            context: ./auth 
+          - service: tickets 
+            context: ./tickets 
+          - service: client 
+            context: ./client 
+          - service: orders 
+            context: ./orders 
+          - service: expiration
+            context: ./expiration 
+          - service: payments 
+            context: ./payments 
     permissions:
       contents: read
       packages: write # Needed for GHCR
