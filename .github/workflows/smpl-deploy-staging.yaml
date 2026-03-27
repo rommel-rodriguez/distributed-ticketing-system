@@ -1,0 +1,11 @@
+name: Simple Deploy to Staging
+
+on:
+  push:
+    branches: 
+      - main
+
+jobs:
+  build-and-push-services:
+    name: Build and Push Services
+    uses: ./.github/workflows/build-and-push-containers.yaml 
