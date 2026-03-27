@@ -7,5 +7,8 @@ on:
 
 jobs:
   build-and-push-services:
+    permissions:
+      contents: read
+      packages: write # Needed for GHCR
     name: Build and Push Services
     uses: ./.github/workflows/build-and-push-containers.yaml 
